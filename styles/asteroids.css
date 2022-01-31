@@ -31,3 +31,16 @@
 .start__title {
     margin-bottom: 2rem;
 }
+
+.infos {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 1rem;
+    color: var(--color-white);
+    font-size: .75rem;
+    opacity: .5;
+    align-items: center;
+    justify-content: space-between;
+}

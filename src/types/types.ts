@@ -15,3 +15,10 @@ export interface KeysInterface {
 	UP: boolean,
 	SPACE: boolean
 }
+
+export interface LevelInterface {
+	level: number,
+	numberOfRoids: number,
+	maxRoidGrade: number,
+	maxRoidSpeed: number,
+}

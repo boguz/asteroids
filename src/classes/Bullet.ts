@@ -6,7 +6,7 @@ export class Bullet {
 	private direction: number;
 	private grade: number;
 	private color: string;
-	private size: number;
+	size: number;
 	private vel: { x: number; y: number };
 	
 	

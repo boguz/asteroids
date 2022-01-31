@@ -117,8 +117,12 @@ class Player {
     }
 }
 
-function getCSSVariable(variableName) {
+function utils(variableName) {
     return getComputedStyle(document.documentElement).getPropertyValue(variableName);
+}
+// min and max included
+function randomIntFromInterval(min, max) {
+    return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
 class Bullet {
@@ -155,15 +159,127 @@ class Bullet {
     }
 }
 
+class Infos {
+    levelEl;
+    livesEl;
+    scoreEl;
+    constructor() {
+        this.levelEl = document.querySelector('.infos_level');
+        this.livesEl = document.querySelector('.infos_lives');
+        this.scoreEl = document.querySelector('.infos_score');
+    }
+    update(level, lives, score) {
+        this.levelEl.textContent = `Level:${level}`;
+        this.livesEl.textContent = `Lives:${lives}`;
+        this.scoreEl.textContent = `Score:${score}`;
+    }
+}
+
+class Roid {
+    canvas;
+    ctx;
+    pos;
+    grade;
+    size;
+    direction;
+    vel;
+    speed;
+    color;
+    points;
+    sizes = [20, 30, 40, 50, 60];
+    possiblePoints = [400, 300, 200, 100, 50];
+    constructor(canvas, ctx, grade, maxRoidGrade, maxRoidSpeed, possibleColors, startPos) {
+        this.canvas = canvas;
+        this.ctx = ctx;
+        this.pos = startPos
+            ? startPos
+            : {
+                x: Math.floor(Math.random() * this.canvas.width),
+                y: Math.floor(Math.random() * this.canvas.height),
+            };
+        this.grade = grade ? grade : randomIntFromInterval(1, maxRoidGrade);
+        this.size = this.sizes[this.grade - 1];
+        this.direction = Math.random() * Math.PI * 2;
+        this.speed = randomIntFromInterval(1.5, maxRoidSpeed);
+        this.vel = {
+            x: Math.random() * this.speed * (Math.random() < 0.5 ? 1 : -1),
+            y: Math.random() * this.speed * (Math.random() < 0.5 ? 1 : -1),
+        };
+        this.color = possibleColors[this.grade - 1];
+        this.points = this.possiblePoints[this.grade - 1];
+        console.log(this);
+    }
+    update() {
+        this.pos.x += this.vel.x;
+        this.pos.y += this.vel.y;
+        if (this.pos.x < 0) {
+            this.pos.x = this.canvas.width;
+        }
+        else if (this.pos.x > this.canvas.width) {
+            this.pos.x = 0;
+        }
+        if (this.pos.y < 0) {
+            this.pos.y = this.canvas.height;
+        }
+        else if (this.pos.y > this.canvas.height) {
+            this.pos.y = 0;
+        }
+    }
+    draw() {
+        this.ctx.beginPath();
+        this.ctx.arc(this.pos.x, this.pos.y, this.size, 0, 2 * Math.PI);
+        this.ctx.fillStyle = this.color;
+        this.ctx.fill();
+        this.ctx.closePath();
+    }
+}
+
+const LEVELS = [
+    {
+        level: 1,
+        numberOfRoids: 4,
+        maxRoidGrade: 3,
+        maxRoidSpeed: 3
+    },
+    {
+        level: 2,
+        numberOfRoids: 6,
+        maxRoidGrade: 3,
+        maxRoidSpeed: 3.5
+    },
+    {
+        level: 3,
+        numberOfRoids: 8,
+        maxRoidGrade: 4,
+        maxRoidSpeed: 4
+    }
+];
+
+function isBulletCollidingWithRoid(bullet, roid) {
+    const sideA = bullet.pos.x - roid.pos.x;
+    const sideB = bullet.pos.y - roid.pos.y;
+    const distance = Math.sqrt(sideA * sideA + sideB * sideB);
+    return distance <= (bullet.size + roid.size);
+}
+
 const canvas = document.querySelector('#canvas');
 const ctx = canvas.getContext('2d');
 const START_SCREEN = document.querySelector('.start');
+const INFOS_SCREEN = document.querySelector('.infos');
 const FPS = 60;
 const FRAME_DURATION = 1000 / FPS;
+const STARTING_LIVES = 3;
 const COLORS = {
-    BG: getCSSVariable('--color-bg'),
-    WHITE: getCSSVariable('--color-white'),
-    BULLET: 'hsl(337, 100%, 65%)'
+    BG: utils('--color-bg'),
+    WHITE: utils('--color-white'),
+    BULLET: 'hsl(337, 100%, 65%)',
+    ROIDS: [
+        'hsl(224, 100%, 58%)',
+        'hsl(198, 100%, 50%)',
+        'hsl(186, 100%, 50%)',
+        'hsl(165, 82%, 51%)',
+        'hsl(150, 100%, 45%)',
+    ]
 };
 const KEYS = {
     LEFT: false,
@@ -173,8 +289,13 @@ const KEYS = {
 };
 let GAME_STATE = GameState.START;
 let player;
+let infos;
 let bullets = [];
+let roids = [];
 let level = 1;
+let currentLevel;
+let score = 0;
+let lives = STARTING_LIVES;
 let prevTime = performance.now();
 let accumulatedFrameTime = 0;
 function handleKeydown(event) {
@@ -217,6 +338,7 @@ function handleKeyup(event) {
 function setGameState(newState) {
     GAME_STATE = newState;
     START_SCREEN.style.display = newState === GameState.START ? 'flex' : 'none';
+    INFOS_SCREEN.style.display = newState === GameState.GAME ? 'flex' : 'none';
     canvas.style.display = newState === GameState.GAME ? 'block' : 'none';
     if (newState === GameState.GAME) {
         initGame();
@@ -232,6 +354,11 @@ function init() {
 }
 function initGame() {
     player = new Player(canvas, ctx, { x: canvas.width / 2, y: canvas.height / 2 }, COLORS.WHITE);
+    infos = new Infos();
+    currentLevel = LEVELS[level - 1];
+    for (let i = 0; i < currentLevel.numberOfRoids; i++) {
+        roids.push(new Roid(canvas, ctx, null, currentLevel.maxRoidGrade, currentLevel.maxRoidSpeed, COLORS.ROIDS, null));
+    }
 }
 function gameloop(time) {
     ctx.fillStyle = COLORS.BG;
@@ -244,6 +371,10 @@ function gameloop(time) {
         // update(frameDuration);
         player.update(KEYS);
         updateBullets();
+        checkBulletsRoidsCollisions();
+        for (let roid of roids) {
+            roid.update();
+        }
         accumulatedFrameTime -= FRAME_DURATION;
     }
     // HERE RENDER GAME ELEMENTS
@@ -261,9 +392,13 @@ function gameloop(time) {
     requestAnimationFrame(gameloop);
 }
 function renderGame() {
+    infos.update(level, lives, score);
     player.draw();
     for (let bullet of bullets) {
         bullet.draw();
+    }
+    for (let roid of roids) {
+        roid.draw();
     }
 }
 /**
@@ -281,6 +416,26 @@ function updateBullets() {
             }
             else {
                 bullet.update();
+            }
+        }
+    }
+}
+/**
+ * Check if any roid was hit by a bullet
+ */
+function checkBulletsRoidsCollisions() {
+    for (let i = bullets.length; i > 0; i--) {
+        for (let j = roids.length; j > 0; j--) {
+            if (isBulletCollidingWithRoid(bullets[i - 1], roids[j - 1])) {
+                const roid = roids[j - 1];
+                bullets.splice(i - 1, 1);
+                if (roid.grade > 1) {
+                    roids.push(new Roid(canvas, ctx, roid.grade - 1, currentLevel.maxRoidGrade, currentLevel.maxRoidSpeed, COLORS.ROIDS, { x: roid.pos.x + 1, y: roid.pos.y + 1 }));
+                    roids.push(new Roid(canvas, ctx, roid.grade - 1, currentLevel.maxRoidGrade, currentLevel.maxRoidSpeed, COLORS.ROIDS, { x: roid.pos.x - 1, y: roid.pos.y - 1 }));
+                }
+                roids.splice(j - 1, 1);
+                score += roid.points;
+                return checkBulletsRoidsCollisions();
             }
         }
     }
