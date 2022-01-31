@@ -1,0 +1,32 @@
+{
+  "name": "asteroids",
+  "version": "1.0.0",
+  "description": "A minimal and modern vanilla javascript version on the Blasteroids game",
+  "main": "index.html",
+  "scripts": {
+    "build": "rimraf dist && npx rollup --config rollup.config.js",
+    "dev": "npx rollup --config rollup.config.js --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/boguz/asteroids.git"
+  },
+  "keywords": [
+    "javascript",
+    "typescript",
+    "game",
+    "asteroids",
+    "blasteroids"
+  ],
+  "author": "LuisPato",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/boguz/asteroids/issues"
+  },
+  "homepage": "https://github.com/boguz/asteroids#readme",
+  "devDependencies": {
+    "@rollup/plugin-typescript": "^8.3.0",
+    "rollup": "^2.66.1",
+    "typescript": "^4.5.5"
+  }
+}

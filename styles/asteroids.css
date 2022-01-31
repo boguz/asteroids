@@ -1,0 +1,33 @@
+:root {
+    --color-bg: hsl(193, 50%, 5%);
+    --color-white: hsl(100, 99%, 99%);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Press Start 2P', cursive;
+}
+
+.canvas,
+.start {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+}
+
+.start {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    background-color: var(--color-bg);
+    color: var(--color-white);
+}
+
+.start__title {
+    margin-bottom: 2rem;
+}
