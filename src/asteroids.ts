@@ -6,11 +6,13 @@ import { Infos } from "./classes/Infos.js";
 import { Roid } from "./classes/Roid.js";
 import { LEVELS } from "./levels.js";
 import { isBulletCollidingWithRoid } from "./utils/collisionDetection.js";
+import { HitPoint } from "./classes/HitPoint";
 
 const canvas = document.querySelector('#canvas') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
 const START_SCREEN = document.querySelector('.start') as HTMLElement;
 const INFOS_SCREEN = document.querySelector('.infos') as HTMLElement;
+
 
 const FPS = 60;
 const FRAME_DURATION = 1000 / FPS;
@@ -39,6 +41,7 @@ let infos: Infos;
 
 let bullets: Bullet[] = [];
 let roids: Roid[] = [];
+let hitPoints: HitPoint[] = [];
 
 let level = 1;
 let currentLevel: LevelInterface;
@@ -132,6 +135,7 @@ function gameloop(time: number) {
 		for (let roid of roids) {
 			roid.update();
 		}
+		updatePoints()
 		accumulatedFrameTime -= FRAME_DURATION;
 	}
 	// HERE RENDER GAME ELEMENTS
@@ -157,6 +161,9 @@ function renderGame() {
 	}
 	for (let roid of roids) {
 		roid.draw();
+	}
+	for (let hitPoint of hitPoints) {
+		hitPoint.draw();
 	}
 }
 
@@ -208,11 +215,23 @@ function checkBulletsRoidsCollisions(): void {
 						{x: roid.pos.x - 1, y: roid.pos.y - 1}
 					));
 				}
+				hitPoints.push(new HitPoint(ctx, roid.pos, roid.points, COLORS.WHITE))
 				roids.splice(j - 1, 1);
 				score += roid.points;
 				
 				return checkBulletsRoidsCollisions();
 			}
+		}
+	}
+}
+
+function updatePoints() {
+	for (let i = hitPoints.length; i > 0; i--) {
+		const hitPoint = hitPoints[i - 1];
+		if (hitPoint.opacity > 0) {
+			hitPoint.update(Date.now());
+		} else {
+			hitPoints.splice(i - 1, 1);
 		}
 	}
 }

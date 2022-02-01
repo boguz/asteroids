@@ -262,6 +262,43 @@ function isBulletCollidingWithRoid(bullet, roid) {
     return distance <= (bullet.size + roid.size);
 }
 
+class HitPoint {
+    ctx;
+    pos;
+    points;
+    ANIMATION_DURATION;
+    startTime;
+    opacity;
+    color;
+    constructor(ctx, pos, points, color) {
+        this.ctx = ctx;
+        this.pos = pos;
+        this.points = points;
+        this.ANIMATION_DURATION = 3000;
+        this.startTime = Date.now();
+        this.opacity = 1;
+        this.color = color;
+    }
+    update(currentTime) {
+        const delta = currentTime - this.startTime;
+        console.log('delta', delta);
+        this.pos.y -= 1.5;
+        this.opacity -= .025;
+        if (this.opacity <= 0.1) {
+            console.log('..............', this.opacity);
+            this.opacity = 0;
+        }
+    }
+    draw() {
+        this.ctx.globalAlpha = this.opacity;
+        this.ctx.fillStyle = this.color;
+        this.ctx.font = "20px sans-serif";
+        this.ctx.textAlign = "center";
+        this.ctx.fillText(`${this.points}`, this.pos.x, this.pos.y);
+        this.ctx.globalAlpha = 1;
+    }
+}
+
 const canvas = document.querySelector('#canvas');
 const ctx = canvas.getContext('2d');
 const START_SCREEN = document.querySelector('.start');
@@ -292,6 +329,7 @@ let player;
 let infos;
 let bullets = [];
 let roids = [];
+let hitPoints = [];
 let level = 1;
 let currentLevel;
 let score = 0;
@@ -375,6 +413,7 @@ function gameloop(time) {
         for (let roid of roids) {
             roid.update();
         }
+        updatePoints();
         accumulatedFrameTime -= FRAME_DURATION;
     }
     // HERE RENDER GAME ELEMENTS
@@ -399,6 +438,9 @@ function renderGame() {
     }
     for (let roid of roids) {
         roid.draw();
+    }
+    for (let hitPoint of hitPoints) {
+        hitPoint.draw();
     }
 }
 /**
@@ -433,10 +475,22 @@ function checkBulletsRoidsCollisions() {
                     roids.push(new Roid(canvas, ctx, roid.grade - 1, currentLevel.maxRoidGrade, currentLevel.maxRoidSpeed, COLORS.ROIDS, { x: roid.pos.x + 1, y: roid.pos.y + 1 }));
                     roids.push(new Roid(canvas, ctx, roid.grade - 1, currentLevel.maxRoidGrade, currentLevel.maxRoidSpeed, COLORS.ROIDS, { x: roid.pos.x - 1, y: roid.pos.y - 1 }));
                 }
+                hitPoints.push(new HitPoint(ctx, roid.pos, roid.points, COLORS.WHITE));
                 roids.splice(j - 1, 1);
                 score += roid.points;
                 return checkBulletsRoidsCollisions();
             }
+        }
+    }
+}
+function updatePoints() {
+    for (let i = hitPoints.length; i > 0; i--) {
+        const hitPoint = hitPoints[i - 1];
+        if (hitPoint.opacity > 0) {
+            hitPoint.update(Date.now());
+        }
+        else {
+            hitPoints.splice(i - 1, 1);
         }
     }
 }
