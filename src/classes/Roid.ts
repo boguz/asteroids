@@ -43,7 +43,6 @@ export class Roid {
 		}
 		this.color = possibleColors[this.grade - 1];
 		this.points = this.possiblePoints[this.grade - 1];
-		console.log(this);
 	}
 	
 	update() {

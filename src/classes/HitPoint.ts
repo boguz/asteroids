@@ -26,11 +26,9 @@ export class HitPoint {
 	
 	update(currentTime: number) {
 		const delta = currentTime - this.startTime;
-		console.log('delta', delta);
 		this.pos.y -= 1.5;
 		this.opacity -= .025;
 		if (this.opacity <= 0.1) {
-			console.log('..............', this.opacity);
 			this.opacity = 0
 		}
 	}

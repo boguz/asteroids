@@ -19,16 +19,20 @@
     height: 100vh;
 }
 
-.start {
+.start,
+.end {
     display: flex;
     align-items: center;
     justify-content: center;
     flex-direction: column;
     background-color: var(--color-bg);
     color: var(--color-white);
+    height: 100vh;
+    width: 100%;
 }
 
-.start__title {
+.start__title,
+.end__title {
     margin-bottom: 2rem;
 }
 

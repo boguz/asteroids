@@ -2,7 +2,7 @@ var GameState;
 (function (GameState) {
     GameState["START"] = "START";
     GameState["GAME"] = "GAME";
-    GameState["END"] = "END";
+    GameState["GAME_OVER"] = "GAME_OVER";
 })(GameState || (GameState = {}));
 
 class Player {
@@ -18,6 +18,11 @@ class Player {
     isThrusting;
     thrustSpeed;
     friction;
+    invincible;
+    invincibleStart;
+    invincibilityTime;
+    opacity;
+    blinkTime;
     constructor(canvas, ctx, initialPosition, color) {
         this.canvas = canvas;
         this.ctx = ctx;
@@ -41,6 +46,11 @@ class Player {
         this.isThrusting = false;
         this.thrustSpeed = .1;
         this.friction = this.thrustSpeed / 10;
+        this.invincible = true;
+        this.invincibleStart = Date.now();
+        this.invincibilityTime = 3000;
+        this.opacity = 1;
+        this.blinkTime = 500;
     }
     draw() {
         if (this.isThrusting) {
@@ -52,7 +62,12 @@ class Player {
         //this.ctx.fillRect(this.pos.x - 1, this.pos.y - 1, 4, 4);
     }
     drawShip() {
+        if (this.invincible) {
+            const delta = Date.now() - this.invincibleStart;
+            this.opacity = delta % this.blinkTime < (this.blinkTime / 2) ? 0.25 : 0.75;
+        }
         this.ctx.beginPath();
+        this.ctx.globalAlpha = this.opacity;
         this.ctx.moveTo(// nose of the ship
         this.pos.x + 4 / 3 * this.radius * Math.cos(this.direction), this.pos.y - 4 / 3 * this.radius * Math.sin(this.direction));
         this.ctx.lineTo(// rear left
@@ -62,6 +77,7 @@ class Player {
         this.ctx.closePath();
         this.ctx.fillStyle = this.colors.ship;
         this.ctx.fill();
+        this.ctx.globalAlpha = 1;
     }
     drawThruster() {
         this.ctx.fillStyle = this.colors.thrusterInner;
@@ -114,6 +130,11 @@ class Player {
         else if (this.pos.y > this.canvas.height) {
             this.pos.y = 0;
         }
+        const timeNow = Date.now();
+        if (timeNow - this.invincibleStart > this.invincibilityTime) {
+            this.invincible = false;
+            this.opacity = 1;
+        }
     }
 }
 
@@ -144,7 +165,6 @@ class Bullet {
             x: 5,
             y: 5,
         };
-        console.log('aaa', this.direction);
     }
     draw() {
         this.ctx.beginPath();
@@ -207,7 +227,6 @@ class Roid {
         };
         this.color = possibleColors[this.grade - 1];
         this.points = this.possiblePoints[this.grade - 1];
-        console.log(this);
     }
     update() {
         this.pos.x += this.vel.x;
@@ -255,11 +274,11 @@ const LEVELS = [
     }
 ];
 
-function isBulletCollidingWithRoid(bullet, roid) {
-    const sideA = bullet.pos.x - roid.pos.x;
-    const sideB = bullet.pos.y - roid.pos.y;
+function areTwoElementsColliding(elOne, elTwo) {
+    const sideA = elOne.pos.x - elTwo.pos.x;
+    const sideB = elOne.pos.y - elTwo.pos.y;
     const distance = Math.sqrt(sideA * sideA + sideB * sideB);
-    return distance <= (bullet.size + roid.size);
+    return distance <= (elOne.size + elTwo.size);
 }
 
 class HitPoint {
@@ -280,12 +299,10 @@ class HitPoint {
         this.color = color;
     }
     update(currentTime) {
-        const delta = currentTime - this.startTime;
-        console.log('delta', delta);
+        currentTime - this.startTime;
         this.pos.y -= 1.5;
         this.opacity -= .025;
         if (this.opacity <= 0.1) {
-            console.log('..............', this.opacity);
             this.opacity = 0;
         }
     }
@@ -311,11 +328,11 @@ const COLORS = {
     WHITE: utils('--color-white'),
     BULLET: 'hsl(337, 100%, 65%)',
     ROIDS: [
-        'hsl(224, 100%, 58%)',
-        'hsl(198, 100%, 50%)',
-        'hsl(186, 100%, 50%)',
-        'hsl(165, 82%, 51%)',
-        'hsl(150, 100%, 45%)',
+        'hsl(53.87,100.00%,73.14%)',
+        'hsl(45.00,100.00%,51.37%)',
+        'hsl(14.39,100.00%,56.67%)',
+        'hsl(1.36,77.19%,55.29%)',
+        'hsl(0.00,73.46%,41.37%)',
     ]
 };
 const KEYS = {
@@ -330,8 +347,10 @@ let infos;
 let bullets = [];
 let roids = [];
 let hitPoints = [];
+let STARTING_LEVEL = 3;
 let level = 1;
 let currentLevel;
+let STARTING_SCORE = 0;
 let score = 0;
 let lives = STARTING_LIVES;
 let prevTime = performance.now();
@@ -347,8 +366,11 @@ function handleKeydown(event) {
     if (GAME_STATE === GameState.START && event.code === 'Space') {
         setGameState(GameState.GAME);
     }
+    if (GAME_STATE === GameState.GAME_OVER && event.code === 'Space') {
+        setGameState(GameState.GAME);
+        initGame();
+    }
     if (GAME_STATE === GameState.GAME) {
-        console.log('e', event.code);
         if (event.code === 'KeyA') {
             KEYS.LEFT = true;
         }
@@ -391,8 +413,14 @@ function init() {
     window.addEventListener('keyup', handleKeyup);
 }
 function initGame() {
+    roids = [];
+    bullets = [];
+    hitPoints = [];
     player = new Player(canvas, ctx, { x: canvas.width / 2, y: canvas.height / 2 }, COLORS.WHITE);
     infos = new Infos();
+    score = STARTING_SCORE;
+    lives = STARTING_LIVES;
+    level = STARTING_LEVEL;
     currentLevel = LEVELS[level - 1];
     for (let i = 0; i < currentLevel.numberOfRoids; i++) {
         roids.push(new Roid(canvas, ctx, null, currentLevel.maxRoidGrade, currentLevel.maxRoidSpeed, COLORS.ROIDS, null));
@@ -409,6 +437,7 @@ function gameloop(time) {
         // update(frameDuration);
         player.update(KEYS);
         updateBullets();
+        checkPlayerRoidsCollisions();
         checkBulletsRoidsCollisions();
         for (let roid of roids) {
             roid.update();
@@ -417,18 +446,10 @@ function gameloop(time) {
         accumulatedFrameTime -= FRAME_DURATION;
     }
     // HERE RENDER GAME ELEMENTS
-    //render();
-    if (GAME_STATE === GameState.START) {
-        //renderStartScreen(ctx);
-        console.log('start');
-    }
-    else if (GAME_STATE === GameState.GAME) {
+    if (GAME_STATE === GameState.GAME) {
         renderGame();
+        requestAnimationFrame(gameloop);
     }
-    else if (GAME_STATE === GameState.END) {
-        console.log('end');
-    }
-    requestAnimationFrame(gameloop);
 }
 function renderGame() {
     infos.update(level, lives, score);
@@ -468,7 +489,7 @@ function updateBullets() {
 function checkBulletsRoidsCollisions() {
     for (let i = bullets.length; i > 0; i--) {
         for (let j = roids.length; j > 0; j--) {
-            if (isBulletCollidingWithRoid(bullets[i - 1], roids[j - 1])) {
+            if (areTwoElementsColliding(bullets[i - 1], roids[j - 1])) {
                 const roid = roids[j - 1];
                 bullets.splice(i - 1, 1);
                 if (roid.grade > 1) {
@@ -481,6 +502,20 @@ function checkBulletsRoidsCollisions() {
                 return checkBulletsRoidsCollisions();
             }
         }
+    }
+}
+function checkPlayerRoidsCollisions() {
+    if (player.invincible)
+        return;
+    for (let i = roids.length; i > 0; i--) {
+        if (areTwoElementsColliding(player, roids[i - 1])) {
+            player.invincible = true;
+            player.invincibleStart = Date.now();
+            lives--;
+        }
+    }
+    if (lives === 0) {
+        setGameState(GameState.GAME_OVER);
     }
 }
 function updatePoints() {

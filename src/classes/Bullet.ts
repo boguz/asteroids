@@ -21,7 +21,6 @@ export class Bullet {
 			x: 5,
 			y: 5,
 		}
-		console.log('aaa', this.direction);
 	}
 	
 	draw() {

@@ -3,7 +3,7 @@ import { KeysInterface, PositionInterface } from "../types/types.js";
 export class Player {
 	private canvas: HTMLCanvasElement;
 	private ctx: CanvasRenderingContext2D;
-	private size: number;
+	public size: number;
 	public radius: number;
 	public pos: PositionInterface;
 	private vel: { x: number; y: number };
@@ -13,6 +13,11 @@ export class Player {
 	private isThrusting: boolean;
 	private thrustSpeed: number;
 	private friction: number;
+	public invincible: boolean;
+	public invincibleStart: number;
+	private invincibilityTime: number;
+	private opacity: number;
+	private blinkTime: number;
 	
 	constructor(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, initialPosition: PositionInterface, color: string) {
 		this.canvas = canvas;
@@ -37,6 +42,11 @@ export class Player {
 		this.isThrusting = false;
 		this.thrustSpeed = .1;
 		this.friction = this.thrustSpeed / 10;
+		this.invincible = true;
+		this.invincibleStart = Date.now();
+		this.invincibilityTime = 3000;
+		this.opacity = 1;
+		this.blinkTime = 500;
 	}
 	
 	draw() {
@@ -51,7 +61,13 @@ export class Player {
 	}
 	
 	drawShip() {
+		if (this.invincible) {
+			const delta = Date.now() - this.invincibleStart;
+			this.opacity = delta % this.blinkTime < (this.blinkTime / 2) ? 0.25 : 0.75;
+		}
+		
 		this.ctx.beginPath();
+		this.ctx.globalAlpha = this.opacity;
 		this.ctx.moveTo( // nose of the ship
 			this.pos.x + 4 / 3 * this.radius * Math.cos(this.direction),
 			this.pos.y - 4 / 3 * this.radius * Math.sin(this.direction)
@@ -67,6 +83,7 @@ export class Player {
 		this.ctx.closePath();
 		this.ctx.fillStyle = this.colors.ship;
 		this.ctx.fill();
+		this.ctx.globalAlpha = 1;
 	}
 	
 	drawThruster() {
@@ -127,6 +144,12 @@ export class Player {
 			this.pos.y = this.canvas.height;
 		} else if (this.pos.y > this.canvas.height) {
 			this.pos.y = 0;
+		}
+		
+		const timeNow = Date.now();
+		if (timeNow - this.invincibleStart > this.invincibilityTime) {
+			this.invincible = false;
+			this.opacity = 1;
 		}
 	}
 }

@@ -1,9 +1,10 @@
 import { Bullet } from "../classes/Bullet.js";
 import { Roid } from "../classes/Roid.js";
+import { Player } from "../classes/Player.js";
 
-export function isBulletCollidingWithRoid(bullet: Bullet, roid: Roid): boolean {
-	const sideA = bullet.pos.x - roid.pos.x;
-	const sideB = bullet.pos.y - roid.pos.y;
+export function areTwoElementsColliding(elOne: Bullet | Player, elTwo: Roid): boolean {
+	const sideA = elOne.pos.x - elTwo.pos.x;
+	const sideB = elOne.pos.y - elTwo.pos.y;
 	const distance = Math.sqrt(sideA * sideA + sideB * sideB);
-	return distance <= (bullet.size + roid.size)
+	return distance <= (elOne.size + elTwo.size);
 }
