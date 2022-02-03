@@ -12,7 +12,9 @@ const canvas = document.querySelector('#canvas') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
 const START_SCREEN = document.querySelector('.start') as HTMLElement;
 const INFOS_SCREEN = document.querySelector('.infos') as HTMLElement;
-
+const END_SCREEN = document.querySelector('.end') as HTMLElement;
+const LEVEL_START_SCREEN = document.querySelector('.level-start') as HTMLElement;
+const LEVEL_START_TITLE = LEVEL_START_SCREEN.querySelector('.level-start__title') as HTMLHeadingElement;
 
 const FPS = 60;
 const FRAME_DURATION = 1000 / FPS;
@@ -43,7 +45,7 @@ let bullets: Bullet[] = [];
 let roids: Roid[] = [];
 let hitPoints: HitPoint[] = [];
 
-let STARTING_LEVEL = 3;
+let STARTING_LEVEL = 1;
 let level = 1;
 let currentLevel: LevelInterface;
 let STARTING_SCORE = 0;
@@ -98,11 +100,11 @@ function setGameState(newState: GameState) {
 	GAME_STATE = newState;
 	START_SCREEN.style.display = newState === GameState.START ? 'flex' : 'none';
 	INFOS_SCREEN.style.display = newState === GameState.GAME ? 'flex' : 'none';
+	END_SCREEN.style.display = newState === GameState.GAME_OVER ? 'flex' : 'none';
 	canvas.style.display = newState === GameState.GAME ? 'block' : 'none';
 	
 	if (newState === GameState.GAME) {
 		initGame();
-		requestAnimationFrame(gameloop);
 	}
 }
 
@@ -116,19 +118,32 @@ function init() {
 }
 
 function initGame() {
-	roids = [];
-	bullets = [];
-	hitPoints = [];
-	player = new Player(canvas, ctx, { x: canvas.width / 2, y: canvas.height / 2 }, COLORS.WHITE);
 	infos = new Infos();
 	score = STARTING_SCORE;
 	lives = STARTING_LIVES;
 	level = STARTING_LEVEL
 	
-	currentLevel = LEVELS[level - 1];
-	for (let i = 0; i < currentLevel.numberOfRoids; i++) {
-		roids.push(new Roid(canvas, ctx, null, currentLevel.maxRoidGrade, currentLevel.maxRoidSpeed, COLORS.ROIDS, null));
-	}
+	initLevel();
+}
+
+function initLevel() {
+	LEVEL_START_TITLE.textContent = `LEVEL ${level}`;
+	LEVEL_START_SCREEN.style.display = 'flex';
+	
+	setTimeout(() => {
+		LEVEL_START_SCREEN.style.display = 'none';
+		roids = [];
+		bullets = [];
+		hitPoints = [];
+		player = new Player(canvas, ctx, { x: canvas.width / 2, y: canvas.height / 2 }, COLORS.WHITE);
+		
+		currentLevel = LEVELS[level - 1];
+		for (let i = 0; i < currentLevel.numberOfRoids; i++) {
+			roids.push(new Roid(canvas, ctx, null, currentLevel.maxRoidGrade, currentLevel.maxRoidSpeed, COLORS.ROIDS, null));
+		}
+		requestAnimationFrame(gameloop);
+		
+	}, 3000);
 }
 
 function gameloop(time: number) {
@@ -154,7 +169,7 @@ function gameloop(time: number) {
 	}
 	
 	// HERE RENDER GAME ELEMENTS
-	if (GAME_STATE === GameState.GAME) {
+	if (GAME_STATE === GameState.GAME && roids.length) {
 		renderGame();
 		requestAnimationFrame(gameloop);
 	}
@@ -230,15 +245,19 @@ function checkBulletsRoidsCollisions(): void {
 			}
 		}
 	}
+	
+	if (lives > 0 && !roids.length) {
+		level++;
+		initLevel();
+	}
 }
 
 function checkPlayerRoidsCollisions() {
-	if (player.invincible) return;
+	if (player.isInvencible) return;
 	
 	for (let i = roids.length; i > 0; i--) {
 		if (areTwoElementsColliding(player, roids[i - 1])) {
-			player.invincible = true;
-			player.invincibleStart = Date.now();
+			player.startInvincibility();
 			lives--;
 		}
 	}

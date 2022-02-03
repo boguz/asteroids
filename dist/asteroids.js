@@ -23,6 +23,13 @@ class Player {
     invincibilityTime;
     opacity;
     blinkTime;
+    startInvincibility() {
+        this.invincible = true;
+        this.invincibleStart = Date.now();
+    }
+    get isInvencible() {
+        return this.invincible;
+    }
     constructor(canvas, ctx, initialPosition, color) {
         this.canvas = canvas;
         this.ctx = ctx;
@@ -255,10 +262,14 @@ class Roid {
 
 const LEVELS = [
     {
+        //level: 1,
+        //numberOfRoids: 4,
+        //maxRoidGrade: 3,
+        //maxRoidSpeed: 3
         level: 1,
-        numberOfRoids: 4,
-        maxRoidGrade: 3,
-        maxRoidSpeed: 3
+        numberOfRoids: 1,
+        maxRoidGrade: 1,
+        maxRoidSpeed: 1
     },
     {
         level: 2,
@@ -320,6 +331,9 @@ const canvas = document.querySelector('#canvas');
 const ctx = canvas.getContext('2d');
 const START_SCREEN = document.querySelector('.start');
 const INFOS_SCREEN = document.querySelector('.infos');
+const END_SCREEN = document.querySelector('.end');
+const LEVEL_START_SCREEN = document.querySelector('.level-start');
+const LEVEL_START_TITLE = LEVEL_START_SCREEN.querySelector('.level-start__title');
 const FPS = 60;
 const FRAME_DURATION = 1000 / FPS;
 const STARTING_LIVES = 3;
@@ -347,7 +361,7 @@ let infos;
 let bullets = [];
 let roids = [];
 let hitPoints = [];
-let STARTING_LEVEL = 3;
+let STARTING_LEVEL = 1;
 let level = 1;
 let currentLevel;
 let STARTING_SCORE = 0;
@@ -399,10 +413,10 @@ function setGameState(newState) {
     GAME_STATE = newState;
     START_SCREEN.style.display = newState === GameState.START ? 'flex' : 'none';
     INFOS_SCREEN.style.display = newState === GameState.GAME ? 'flex' : 'none';
+    END_SCREEN.style.display = newState === GameState.GAME_OVER ? 'flex' : 'none';
     canvas.style.display = newState === GameState.GAME ? 'block' : 'none';
     if (newState === GameState.GAME) {
         initGame();
-        requestAnimationFrame(gameloop);
     }
 }
 function init() {
@@ -413,18 +427,27 @@ function init() {
     window.addEventListener('keyup', handleKeyup);
 }
 function initGame() {
-    roids = [];
-    bullets = [];
-    hitPoints = [];
-    player = new Player(canvas, ctx, { x: canvas.width / 2, y: canvas.height / 2 }, COLORS.WHITE);
     infos = new Infos();
     score = STARTING_SCORE;
     lives = STARTING_LIVES;
     level = STARTING_LEVEL;
-    currentLevel = LEVELS[level - 1];
-    for (let i = 0; i < currentLevel.numberOfRoids; i++) {
-        roids.push(new Roid(canvas, ctx, null, currentLevel.maxRoidGrade, currentLevel.maxRoidSpeed, COLORS.ROIDS, null));
-    }
+    initLevel();
+}
+function initLevel() {
+    LEVEL_START_TITLE.textContent = `LEVEL ${level}`;
+    LEVEL_START_SCREEN.style.display = 'flex';
+    setTimeout(() => {
+        LEVEL_START_SCREEN.style.display = 'none';
+        roids = [];
+        bullets = [];
+        hitPoints = [];
+        player = new Player(canvas, ctx, { x: canvas.width / 2, y: canvas.height / 2 }, COLORS.WHITE);
+        currentLevel = LEVELS[level - 1];
+        for (let i = 0; i < currentLevel.numberOfRoids; i++) {
+            roids.push(new Roid(canvas, ctx, null, currentLevel.maxRoidGrade, currentLevel.maxRoidSpeed, COLORS.ROIDS, null));
+        }
+        requestAnimationFrame(gameloop);
+    }, 3000);
 }
 function gameloop(time) {
     ctx.fillStyle = COLORS.BG;
@@ -446,7 +469,7 @@ function gameloop(time) {
         accumulatedFrameTime -= FRAME_DURATION;
     }
     // HERE RENDER GAME ELEMENTS
-    if (GAME_STATE === GameState.GAME) {
+    if (GAME_STATE === GameState.GAME && roids.length) {
         renderGame();
         requestAnimationFrame(gameloop);
     }
@@ -503,14 +526,17 @@ function checkBulletsRoidsCollisions() {
             }
         }
     }
+    if (lives > 0 && !roids.length) {
+        level++;
+        initLevel();
+    }
 }
 function checkPlayerRoidsCollisions() {
-    if (player.invincible)
+    if (player.isInvencible)
         return;
     for (let i = roids.length; i > 0; i--) {
         if (areTwoElementsColliding(player, roids[i - 1])) {
-            player.invincible = true;
-            player.invincibleStart = Date.now();
+            player.startInvincibility();
             lives--;
         }
     }

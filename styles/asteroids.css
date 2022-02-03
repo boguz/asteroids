@@ -48,3 +48,17 @@
     align-items: center;
     justify-content: space-between;
 }
+
+.level-start {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    background-color: var(--color-bg);
+    color: var(--color-white);
+    height: 100vh;
+    width: 100%;
+}

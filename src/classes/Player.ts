@@ -13,11 +13,20 @@ export class Player {
 	private isThrusting: boolean;
 	private thrustSpeed: number;
 	private friction: number;
-	public invincible: boolean;
-	public invincibleStart: number;
+	private invincible: boolean;
+	private invincibleStart: number;
 	private invincibilityTime: number;
 	private opacity: number;
 	private blinkTime: number;
+	
+	public startInvincibility() {
+		this.invincible = true;
+		this.invincibleStart = Date.now();
+	}
+	
+	get isInvencible() {
+		return this.invincible;
+	}
 	
 	constructor(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, initialPosition: PositionInterface, color: string) {
 		this.canvas = canvas;

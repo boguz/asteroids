@@ -2,10 +2,14 @@ import { LevelInterface } from "./types/types.js";
 
 export const LEVELS: LevelInterface[] = [
 	{
+		//level: 1,
+		//numberOfRoids: 4,
+		//maxRoidGrade: 3,
+		//maxRoidSpeed: 3
 		level: 1,
-		numberOfRoids: 4,
-		maxRoidGrade: 3,
-		maxRoidSpeed: 3
+		numberOfRoids: 1,
+		maxRoidGrade: 1,
+		maxRoidSpeed: 1
 	},
 	{
 		level: 2,
