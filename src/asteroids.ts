@@ -8,6 +8,7 @@ import { LEVELS } from "./levels.js";
 import { areTwoElementsColliding } from "./utils/collisionDetection.js";
 import { HitPoint } from "./classes/HitPoint";
 
+// Get page elements
 const canvas = document.querySelector('#canvas') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
 const START_SCREEN = document.querySelector('.start') as HTMLElement;
@@ -16,44 +17,54 @@ const END_SCREEN = document.querySelector('.end') as HTMLElement;
 const LEVEL_START_SCREEN = document.querySelector('.level-start') as HTMLElement;
 const LEVEL_START_TITLE = LEVEL_START_SCREEN.querySelector('.level-start__title') as HTMLHeadingElement;
 
+
+// Game animation variables
 const FPS = 60;
 const FRAME_DURATION = 1000 / FPS;
-const STARTING_LIVES = 3;
+let prevTime = performance.now();
+let accumulatedFrameTime = 0;
+
+// Colors and design
 const COLORS = {
 	BG: utils('--color-bg'),
 	WHITE: utils('--color-white'),
-	BULLET: 'hsl(337, 100%, 65%)',
+	SHIP: 'hsl(20, 16%, 93%)',
+	BULLET: 'hsl(291, 80%, 50%)',
+	POINTS: 'hsl(291, 60%, 75%)',
 	ROIDS: [
-		'hsl(53.87,100.00%,73.14%)',
-		'hsl(45.00,100.00%,51.37%)',
-		'hsl(14.39,100.00%,56.67%)',
-		'hsl(1.36,77.19%,55.29%)',
-		'hsl(0.00,73.46%,41.37%)',
+		'hsl(53, 100%, 73%)',
+		'hsl(45, 100%, 51%)',
+		'hsl(14, 100%, 56%)',
+		'hsl(1, 77%, 55%)',
+		'hsl(0, 73%, 41%)',
 	]
 };
+
+// Gameplay variables
 const KEYS: KeysInterface = {
 	LEFT: false,
 	RIGHT: false,
 	UP: false,
 	SPACE: false,
 }
+
+// Game variables
+const LEVEL_START_SCREEN_DURATION = 3000;
+const STARTING_LIVES = 3;
+let STARTING_LEVEL = 1;
 let GAME_STATE: GameState = GameState.START;
+let STARTING_SCORE = 0;
+
 let player: Player;
 let infos: Infos;
-
 let bullets: Bullet[] = [];
 let roids: Roid[] = [];
 let hitPoints: HitPoint[] = [];
-
-let STARTING_LEVEL = 1;
-let level = 1;
 let currentLevel: LevelInterface;
-let STARTING_SCORE = 0;
+
+let level = 1;
 let score = 0;
 let lives = STARTING_LIVES;
-
-let prevTime = performance.now();
-let accumulatedFrameTime = 0;
 
 function handleKeydown(event: KeyboardEvent) {
 	if (GAME_STATE === GameState.GAME && event.code === 'Space' && player) {
@@ -122,7 +133,6 @@ function initGame() {
 	score = STARTING_SCORE;
 	lives = STARTING_LIVES;
 	level = STARTING_LEVEL
-	
 	initLevel();
 }
 
@@ -135,7 +145,7 @@ function initLevel() {
 		roids = [];
 		bullets = [];
 		hitPoints = [];
-		player = new Player(canvas, ctx, { x: canvas.width / 2, y: canvas.height / 2 }, COLORS.WHITE);
+		player = new Player(canvas, ctx, { x: canvas.width / 2, y: canvas.height / 2 }, COLORS.SHIP);
 		
 		currentLevel = LEVELS[level - 1];
 		for (let i = 0; i < currentLevel.numberOfRoids; i++) {
@@ -143,7 +153,7 @@ function initLevel() {
 		}
 		requestAnimationFrame(gameloop);
 		
-	}, 3000);
+	}, LEVEL_START_SCREEN_DURATION);
 }
 
 function gameloop(time: number) {
@@ -237,7 +247,7 @@ function checkBulletsRoidsCollisions(): void {
 						{x: roid.pos.x - 1, y: roid.pos.y - 1}
 					));
 				}
-				hitPoints.push(new HitPoint(ctx, roid.pos, roid.points, COLORS.WHITE))
+				hitPoints.push(new HitPoint(ctx, roid.pos, roid.points, COLORS.POINTS))
 				roids.splice(j - 1, 1);
 				score += roid.points;
 				
@@ -257,6 +267,7 @@ function checkPlayerRoidsCollisions() {
 	
 	for (let i = roids.length; i > 0; i--) {
 		if (areTwoElementsColliding(player, roids[i - 1])) {
+			showPlayerHitCanvasBorder();
 			player.startInvincibility();
 			lives--;
 		}
@@ -277,6 +288,16 @@ function updatePoints() {
 			hitPoints.splice(i - 1, 1);
 		}
 	}
+}
+
+function showPlayerHitCanvasBorder() {
+	canvas.classList.add('canvas--player-hit');
+	
+	canvas.addEventListener('animationend', (event: AnimationEvent) => {
+		if (event.animationName === 'canvasBorderAnimation') {
+			canvas.classList.remove('canvas--player-hit')
+		}
+	});
 }
 
 init();

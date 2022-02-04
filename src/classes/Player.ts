@@ -50,7 +50,7 @@ export class Player {
 		this.rotationSpeed = Math.PI / 50;
 		this.isThrusting = false;
 		this.thrustSpeed = .1;
-		this.friction = this.thrustSpeed / 10;
+		this.friction = this.thrustSpeed / 12;
 		this.invincible = true;
 		this.invincibleStart = Date.now();
 		this.invincibilityTime = 3000;
@@ -64,17 +64,13 @@ export class Player {
 		}
 		this.drawShip();
 		
-		// centre dot (optional)
-		// this.ctx.fillStyle = "red";
-		//this.ctx.fillRect(this.pos.x - 1, this.pos.y - 1, 4, 4);
-	}
-	
-	drawShip() {
 		if (this.invincible) {
 			const delta = Date.now() - this.invincibleStart;
 			this.opacity = delta % this.blinkTime < (this.blinkTime / 2) ? 0.25 : 0.75;
 		}
-		
+	}
+	
+	drawShip() {
 		this.ctx.beginPath();
 		this.ctx.globalAlpha = this.opacity;
 		this.ctx.moveTo( // nose of the ship
@@ -96,6 +92,7 @@ export class Player {
 	}
 	
 	drawThruster() {
+		this.ctx.globalAlpha = this.opacity;
 		this.ctx.fillStyle = this.colors.thrusterInner;
 		this.ctx.strokeStyle = this.colors.thrusterOuter;
 		this.ctx.lineWidth = this.size / 15;
@@ -115,6 +112,7 @@ export class Player {
 		this.ctx.closePath();
 		this.ctx.fill();
 		this.ctx.stroke();
+		this.ctx.globalAlpha = 1;
 	}
 	
 	update(KEYS: KeysInterface) {
@@ -133,8 +131,12 @@ export class Player {
 		} else {
 			if (this.vel.x > 0) {
 				this.vel.x -= this.friction;
+			} else if (this.vel.x < 0) {
+				this.vel.x += this.friction;
 			}
 			if (this.vel.y > 0) {
+				this.vel.y -= this.friction;
+			} else if (this.vel.y < 0) {
 				this.vel.y += this.friction;
 			}
 		}

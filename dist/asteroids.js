@@ -52,7 +52,7 @@ class Player {
         this.rotationSpeed = Math.PI / 50;
         this.isThrusting = false;
         this.thrustSpeed = .1;
-        this.friction = this.thrustSpeed / 10;
+        this.friction = this.thrustSpeed / 12;
         this.invincible = true;
         this.invincibleStart = Date.now();
         this.invincibilityTime = 3000;
@@ -64,15 +64,12 @@ class Player {
             this.drawThruster();
         }
         this.drawShip();
-        // centre dot (optional)
-        // this.ctx.fillStyle = "red";
-        //this.ctx.fillRect(this.pos.x - 1, this.pos.y - 1, 4, 4);
-    }
-    drawShip() {
         if (this.invincible) {
             const delta = Date.now() - this.invincibleStart;
             this.opacity = delta % this.blinkTime < (this.blinkTime / 2) ? 0.25 : 0.75;
         }
+    }
+    drawShip() {
         this.ctx.beginPath();
         this.ctx.globalAlpha = this.opacity;
         this.ctx.moveTo(// nose of the ship
@@ -87,6 +84,7 @@ class Player {
         this.ctx.globalAlpha = 1;
     }
     drawThruster() {
+        this.ctx.globalAlpha = this.opacity;
         this.ctx.fillStyle = this.colors.thrusterInner;
         this.ctx.strokeStyle = this.colors.thrusterOuter;
         this.ctx.lineWidth = this.size / 15;
@@ -100,6 +98,7 @@ class Player {
         this.ctx.closePath();
         this.ctx.fill();
         this.ctx.stroke();
+        this.ctx.globalAlpha = 1;
     }
     update(KEYS) {
         if (KEYS.RIGHT) {
@@ -118,7 +117,13 @@ class Player {
             if (this.vel.x > 0) {
                 this.vel.x -= this.friction;
             }
+            else if (this.vel.x < 0) {
+                this.vel.x += this.friction;
+            }
             if (this.vel.y > 0) {
+                this.vel.y -= this.friction;
+            }
+            else if (this.vel.y < 0) {
                 this.vel.y += this.friction;
             }
         }
@@ -327,6 +332,7 @@ class HitPoint {
     }
 }
 
+// Get page elements
 const canvas = document.querySelector('#canvas');
 const ctx = canvas.getContext('2d');
 const START_SCREEN = document.querySelector('.start');
@@ -334,41 +340,48 @@ const INFOS_SCREEN = document.querySelector('.infos');
 const END_SCREEN = document.querySelector('.end');
 const LEVEL_START_SCREEN = document.querySelector('.level-start');
 const LEVEL_START_TITLE = LEVEL_START_SCREEN.querySelector('.level-start__title');
+// Game animation variables
 const FPS = 60;
 const FRAME_DURATION = 1000 / FPS;
-const STARTING_LIVES = 3;
+let prevTime = performance.now();
+let accumulatedFrameTime = 0;
+// Colors and design
 const COLORS = {
     BG: utils('--color-bg'),
     WHITE: utils('--color-white'),
-    BULLET: 'hsl(337, 100%, 65%)',
+    SHIP: 'hsl(20, 16%, 93%)',
+    BULLET: 'hsl(291, 80%, 50%)',
+    POINTS: 'hsl(291, 60%, 75%)',
     ROIDS: [
-        'hsl(53.87,100.00%,73.14%)',
-        'hsl(45.00,100.00%,51.37%)',
-        'hsl(14.39,100.00%,56.67%)',
-        'hsl(1.36,77.19%,55.29%)',
-        'hsl(0.00,73.46%,41.37%)',
+        'hsl(53, 100%, 73%)',
+        'hsl(45, 100%, 51%)',
+        'hsl(14, 100%, 56%)',
+        'hsl(1, 77%, 55%)',
+        'hsl(0, 73%, 41%)',
     ]
 };
+// Gameplay variables
 const KEYS = {
     LEFT: false,
     RIGHT: false,
     UP: false,
     SPACE: false,
 };
+// Game variables
+const LEVEL_START_SCREEN_DURATION = 3000;
+const STARTING_LIVES = 3;
+let STARTING_LEVEL = 1;
 let GAME_STATE = GameState.START;
+let STARTING_SCORE = 0;
 let player;
 let infos;
 let bullets = [];
 let roids = [];
 let hitPoints = [];
-let STARTING_LEVEL = 1;
-let level = 1;
 let currentLevel;
-let STARTING_SCORE = 0;
+let level = 1;
 let score = 0;
 let lives = STARTING_LIVES;
-let prevTime = performance.now();
-let accumulatedFrameTime = 0;
 function handleKeydown(event) {
     if (GAME_STATE === GameState.GAME && event.code === 'Space' && player) {
         const bulletPos = {
@@ -441,13 +454,13 @@ function initLevel() {
         roids = [];
         bullets = [];
         hitPoints = [];
-        player = new Player(canvas, ctx, { x: canvas.width / 2, y: canvas.height / 2 }, COLORS.WHITE);
+        player = new Player(canvas, ctx, { x: canvas.width / 2, y: canvas.height / 2 }, COLORS.SHIP);
         currentLevel = LEVELS[level - 1];
         for (let i = 0; i < currentLevel.numberOfRoids; i++) {
             roids.push(new Roid(canvas, ctx, null, currentLevel.maxRoidGrade, currentLevel.maxRoidSpeed, COLORS.ROIDS, null));
         }
         requestAnimationFrame(gameloop);
-    }, 3000);
+    }, LEVEL_START_SCREEN_DURATION);
 }
 function gameloop(time) {
     ctx.fillStyle = COLORS.BG;
@@ -519,7 +532,7 @@ function checkBulletsRoidsCollisions() {
                     roids.push(new Roid(canvas, ctx, roid.grade - 1, currentLevel.maxRoidGrade, currentLevel.maxRoidSpeed, COLORS.ROIDS, { x: roid.pos.x + 1, y: roid.pos.y + 1 }));
                     roids.push(new Roid(canvas, ctx, roid.grade - 1, currentLevel.maxRoidGrade, currentLevel.maxRoidSpeed, COLORS.ROIDS, { x: roid.pos.x - 1, y: roid.pos.y - 1 }));
                 }
-                hitPoints.push(new HitPoint(ctx, roid.pos, roid.points, COLORS.WHITE));
+                hitPoints.push(new HitPoint(ctx, roid.pos, roid.points, COLORS.POINTS));
                 roids.splice(j - 1, 1);
                 score += roid.points;
                 return checkBulletsRoidsCollisions();
@@ -536,6 +549,7 @@ function checkPlayerRoidsCollisions() {
         return;
     for (let i = roids.length; i > 0; i--) {
         if (areTwoElementsColliding(player, roids[i - 1])) {
+            showPlayerHitCanvasBorder();
             player.startInvincibility();
             lives--;
         }
@@ -554,6 +568,14 @@ function updatePoints() {
             hitPoints.splice(i - 1, 1);
         }
     }
+}
+function showPlayerHitCanvasBorder() {
+    canvas.classList.add('canvas--player-hit');
+    canvas.addEventListener('animationend', (event) => {
+        if (event.animationName === 'canvasBorderAnimation') {
+            canvas.classList.remove('canvas--player-hit');
+        }
+    });
 }
 init();
 //# sourceMappingURL=asteroids.js.map
