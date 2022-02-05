@@ -271,10 +271,16 @@ class Roid {
 const LEVELS = [
     {
         level: 1,
-        numberOfRoids: 4,
-        maxRoidGrade: 3,
+        numberOfRoids: 1,
+        maxRoidGrade: 1,
         maxRoidSpeed: 2
     }
+    // {
+    // 	level: 1,
+    // 	numberOfRoids: 4,
+    // 	maxRoidGrade: 3,
+    // 	maxRoidSpeed: 2
+    // },
     // {
     // 	level: 2,
     // 	numberOfRoids: 4,
@@ -473,15 +479,27 @@ class PowerUp {
     }
 }
 
+function saveScore(storeName, score) {
+    localStorage.setItem(storeName, JSON.stringify(score));
+}
+function getScore(storeName) {
+    const score = localStorage.getItem(storeName);
+    return score ? JSON.parse(score) : [null, null, null];
+}
+
 // Get page elements
 const canvas = document.querySelector('#canvas');
 const ctx = canvas.getContext('2d');
 const START_SCREEN = document.querySelector('.start');
 const INFOS_SCREEN = document.querySelector('.infos');
 const END_SCREEN = document.querySelector('.end');
-const WIN_SCREEN = document.querySelector('.win');
+const END_SCREEN_TITLE = END_SCREEN.querySelector('.end__title');
 const LEVEL_START_SCREEN = document.querySelector('.level-start');
 const LEVEL_START_TITLE = LEVEL_START_SCREEN.querySelector('.level-start__title');
+const HISCORE_EL_ONE = document.querySelector('.hiscore--one');
+const HISCORE_EL_TWO = document.querySelector('.hiscore--two');
+const HISCORE_EL_THREE = document.querySelector('.hiscore--three');
+const HISCORE_ELEMENTS = [HISCORE_EL_ONE, HISCORE_EL_TWO, HISCORE_EL_THREE];
 // Game animation variables
 const FPS = 60;
 const FRAME_DURATION = 1000 / FPS;
@@ -512,11 +530,13 @@ const KEYS = {
 };
 // Game variables
 const LEVEL_START_SCREEN_DURATION = 3000;
-const STARTING_LIVES = 3;
+const STARTING_LIVES = 1;
 const STARTING_LEVEL = 1;
 const STARTING_SCORE = 0;
 let GAME_STATE = GameState.START;
 const ADD_POWERUP_THRESHOLD = 0.1;
+const STORE_NAME = 'AsteroidsScore';
+const AMOUNT_OF_HIGHSCORES = 3;
 let player;
 let infos;
 let bullets = [];
@@ -538,7 +558,8 @@ function handleKeydown(event) {
     if (GAME_STATE === GameState.START && event.code === 'Space') {
         setGameState(GameState.GAME);
     }
-    if (GAME_STATE === GameState.GAME_OVER && event.code === 'Space') {
+    if (GAME_STATE === GameState.GAME_OVER && event.code === 'Space' ||
+        GAME_STATE === GameState.WIN && event.code === 'Space') {
         setGameState(GameState.GAME);
         initGame();
     }
@@ -571,11 +592,14 @@ function setGameState(newState) {
     GAME_STATE = newState;
     START_SCREEN.style.display = newState === GameState.START ? 'flex' : 'none';
     INFOS_SCREEN.style.display = newState === GameState.GAME ? 'flex' : 'none';
-    END_SCREEN.style.display = newState === GameState.GAME_OVER ? 'flex' : 'none';
-    WIN_SCREEN.style.display = newState === GameState.WIN ? 'flex' : 'none';
+    END_SCREEN.style.display = newState === GameState.GAME_OVER || newState === GameState.WIN ? 'flex' : 'none';
     canvas.style.display = newState === GameState.GAME ? 'block' : 'none';
-    if (newState === GameState.GAME) {
+    if (GAME_STATE === GameState.GAME) {
         initGame();
+    }
+    else if (GAME_STATE === GameState.WIN || GAME_STATE === GameState.GAME_OVER) {
+        END_SCREEN_TITLE.textContent = GAME_STATE === GameState.GAME_OVER ? 'GAME OVER' : 'YOU WIN';
+        updateSavedScore();
     }
 }
 function init() {
@@ -753,6 +777,29 @@ function showPlayerHitCanvasBorder() {
             canvas.classList.remove('canvas--player-hit');
         }
     });
+}
+function updateSavedScore() {
+    const hiScores = getScore(STORE_NAME);
+    if (GAME_STATE === GameState.WIN) {
+        for (let i = 0; i < AMOUNT_OF_HIGHSCORES; i++) {
+            if (hiScores[i] && hiScores[i].score >= score) {
+                continue;
+            }
+            else {
+                let userName = window.prompt('Well done, you have one of the top 3 scores. What is your user name?');
+                if (!userName)
+                    userName = 'n/a';
+                hiScores[i] = { name: userName.trim(), score: score };
+                break;
+            }
+        }
+        saveScore(STORE_NAME, hiScores);
+    }
+    for (let i = 0; i < AMOUNT_OF_HIGHSCORES; i++) {
+        const hiScoreName = hiScores[i]?.name ? hiScores[i]?.name : '---';
+        const hiScoreScore = hiScores[i]?.score ? hiScores[i]?.score : '---';
+        HISCORE_ELEMENTS[i].textContent = `${i + 1}. ${hiScoreName}: ${hiScoreScore}`;
+    }
 }
 init();
 //# sourceMappingURL=asteroids.js.map

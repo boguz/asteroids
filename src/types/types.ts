@@ -23,3 +23,14 @@ export interface LevelInterface {
 	maxRoidGrade: number,
 	maxRoidSpeed: number,
 }
+
+export type HiScoresInterface = [
+	ScoreInterface | null,
+	ScoreInterface | null,
+	ScoreInterface | null,
+];
+
+export interface ScoreInterface {
+	name: string,
+	score: number,
+}

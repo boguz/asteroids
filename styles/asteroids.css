@@ -79,3 +79,12 @@
     height: 100vh;
     width: 100%;
 }
+
+.highscores {
+    display: block;
+    margin-top: 6rem;
+}
+
+.hiscore {
+    margin-bottom: 1rem;
+}
