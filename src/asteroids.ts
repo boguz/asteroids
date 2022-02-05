@@ -15,6 +15,7 @@ const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
 const START_SCREEN = document.querySelector('.start') as HTMLElement;
 const INFOS_SCREEN = document.querySelector('.infos') as HTMLElement;
 const END_SCREEN = document.querySelector('.end') as HTMLElement;
+const WIN_SCREEN = document.querySelector('.win') as HTMLElement;
 const LEVEL_START_SCREEN = document.querySelector('.level-start') as HTMLElement;
 const LEVEL_START_TITLE = LEVEL_START_SCREEN.querySelector('.level-start__title') as HTMLHeadingElement;
 
@@ -116,6 +117,7 @@ function setGameState(newState: GameState) {
 	START_SCREEN.style.display = newState === GameState.START ? 'flex' : 'none';
 	INFOS_SCREEN.style.display = newState === GameState.GAME ? 'flex' : 'none';
 	END_SCREEN.style.display = newState === GameState.GAME_OVER ? 'flex' : 'none';
+	WIN_SCREEN.style.display = newState === GameState.WIN ? 'flex' : 'none';
 	canvas.style.display = newState === GameState.GAME ? 'block' : 'none';
 	
 	if (newState === GameState.GAME) {
@@ -267,8 +269,12 @@ function checkBulletsRoidsCollisions(): void {
 	}
 	
 	if (lives > 0 && !roids.length) {
-		level++;
-		initLevel();
+		if (level !== LEVELS.length) {
+			level++;
+			initLevel();
+		} else {
+			setGameState(GameState.WIN);
+		}
 	}
 }
 

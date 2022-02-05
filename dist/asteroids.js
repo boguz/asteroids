@@ -3,6 +3,7 @@ var GameState;
     GameState["START"] = "START";
     GameState["GAME"] = "GAME";
     GameState["GAME_OVER"] = "GAME_OVER";
+    GameState["WIN"] = "WIN";
 })(GameState || (GameState = {}));
 
 class Player {
@@ -273,91 +274,91 @@ const LEVELS = [
         numberOfRoids: 4,
         maxRoidGrade: 3,
         maxRoidSpeed: 2
-    },
-    {
-        level: 2,
-        numberOfRoids: 4,
-        maxRoidGrade: 3,
-        maxRoidSpeed: 3
-    },
-    {
-        level: 3,
-        numberOfRoids: 5,
-        maxRoidGrade: 4,
-        maxRoidSpeed: 3.5
-    },
-    {
-        level: 4,
-        numberOfRoids: 5,
-        maxRoidGrade: 4,
-        maxRoidSpeed: 4
-    },
-    {
-        level: 5,
-        numberOfRoids: 6,
-        maxRoidGrade: 4,
-        maxRoidSpeed: 4
-    },
-    {
-        level: 6,
-        numberOfRoids: 6,
-        maxRoidGrade: 4,
-        maxRoidSpeed: 4
-    },
-    {
-        level: 7,
-        numberOfRoids: 7,
-        maxRoidGrade: 4,
-        maxRoidSpeed: 4
-    },
-    {
-        level: 8,
-        numberOfRoids: 8,
-        maxRoidGrade: 5,
-        maxRoidSpeed: 4
-    },
-    {
-        level: 9,
-        numberOfRoids: 9,
-        maxRoidGrade: 5,
-        maxRoidSpeed: 5
-    },
-    {
-        level: 10,
-        numberOfRoids: 10,
-        maxRoidGrade: 5,
-        maxRoidSpeed: 5
-    },
-    {
-        level: 11,
-        numberOfRoids: 11,
-        maxRoidGrade: 5,
-        maxRoidSpeed: 5
-    },
-    {
-        level: 12,
-        numberOfRoids: 12,
-        maxRoidGrade: 5,
-        maxRoidSpeed: 5
-    },
-    {
-        level: 13,
-        numberOfRoids: 14,
-        maxRoidGrade: 5,
-        maxRoidSpeed: 5
-    },
-    {
-        level: 14,
-        numberOfRoids: 17,
-        maxRoidGrade: 5,
-        maxRoidSpeed: 5
-    },
-    {
-        level: 15,
-        numberOfRoids: 20,
-        maxRoidGrade: 5,
-        maxRoidSpeed: 5
     }
+    // {
+    // 	level: 2,
+    // 	numberOfRoids: 4,
+    // 	maxRoidGrade: 3,
+    // 	maxRoidSpeed: 3
+    // },
+    // {
+    // 	level: 3,
+    // 	numberOfRoids: 5,
+    // 	maxRoidGrade: 4,
+    // 	maxRoidSpeed: 3.5
+    // },
+    // {
+    // 	level: 4,
+    // 	numberOfRoids: 5,
+    // 	maxRoidGrade: 4,
+    // 	maxRoidSpeed: 4
+    // },
+    // {
+    // 	level: 5,
+    // 	numberOfRoids: 6,
+    // 	maxRoidGrade: 4,
+    // 	maxRoidSpeed: 4
+    // },
+    // {
+    // 	level: 6,
+    // 	numberOfRoids: 6,
+    // 	maxRoidGrade: 4,
+    // 	maxRoidSpeed: 4
+    // },
+    // {
+    // 	level: 7,
+    // 	numberOfRoids: 7,
+    // 	maxRoidGrade: 4,
+    // 	maxRoidSpeed: 4
+    // },
+    // {
+    // 	level: 8,
+    // 	numberOfRoids: 8,
+    // 	maxRoidGrade: 5,
+    // 	maxRoidSpeed: 4
+    // },
+    // {
+    // 	level: 9,
+    // 	numberOfRoids: 9,
+    // 	maxRoidGrade: 5,
+    // 	maxRoidSpeed: 5
+    // },
+    // {
+    // 	level: 10,
+    // 	numberOfRoids: 10,
+    // 	maxRoidGrade: 5,
+    // 	maxRoidSpeed: 5
+    // },
+    // {
+    // 	level: 11,
+    // 	numberOfRoids: 11,
+    // 	maxRoidGrade: 5,
+    // 	maxRoidSpeed: 5
+    // },
+    // {
+    // 	level: 12,
+    // 	numberOfRoids: 12,
+    // 	maxRoidGrade: 5,
+    // 	maxRoidSpeed: 5
+    // },
+    // {
+    // 	level: 13,
+    // 	numberOfRoids: 14,
+    // 	maxRoidGrade: 5,
+    // 	maxRoidSpeed: 5
+    // },
+    // {
+    // 	level: 14,
+    // 	numberOfRoids: 17,
+    // 	maxRoidGrade: 5,
+    // 	maxRoidSpeed: 5
+    // },
+    // {
+    // 	level: 15,
+    // 	numberOfRoids: 20,
+    // 	maxRoidGrade: 5,
+    // 	maxRoidSpeed: 5
+    // }
 ];
 
 function areTwoElementsColliding(elOne, elTwo) {
@@ -478,6 +479,7 @@ const ctx = canvas.getContext('2d');
 const START_SCREEN = document.querySelector('.start');
 const INFOS_SCREEN = document.querySelector('.infos');
 const END_SCREEN = document.querySelector('.end');
+const WIN_SCREEN = document.querySelector('.win');
 const LEVEL_START_SCREEN = document.querySelector('.level-start');
 const LEVEL_START_TITLE = LEVEL_START_SCREEN.querySelector('.level-start__title');
 // Game animation variables
@@ -570,6 +572,7 @@ function setGameState(newState) {
     START_SCREEN.style.display = newState === GameState.START ? 'flex' : 'none';
     INFOS_SCREEN.style.display = newState === GameState.GAME ? 'flex' : 'none';
     END_SCREEN.style.display = newState === GameState.GAME_OVER ? 'flex' : 'none';
+    WIN_SCREEN.style.display = newState === GameState.WIN ? 'flex' : 'none';
     canvas.style.display = newState === GameState.GAME ? 'block' : 'none';
     if (newState === GameState.GAME) {
         initGame();
@@ -687,8 +690,13 @@ function checkBulletsRoidsCollisions() {
         }
     }
     if (lives > 0 && !roids.length) {
-        level++;
-        initLevel();
+        if (level !== LEVELS.length) {
+            level++;
+            initLevel();
+        }
+        else {
+            setGameState(GameState.WIN);
+        }
     }
 }
 function addPowerUp() {

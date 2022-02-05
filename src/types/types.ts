@@ -2,6 +2,7 @@ export enum GameState {
 	'START' = 'START',
 	'GAME' = 'GAME',
 	'GAME_OVER' = 'GAME_OVER',
+	'WIN' = 'WIN',
 }
 
 export interface PositionInterface {
