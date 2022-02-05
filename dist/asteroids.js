@@ -195,13 +195,15 @@ class Infos {
     levelEl;
     livesEl;
     scoreEl;
-    constructor() {
+    levelsAmount;
+    constructor(levelsAmount) {
         this.levelEl = document.querySelector('.infos_level');
         this.livesEl = document.querySelector('.infos_lives');
         this.scoreEl = document.querySelector('.infos_score');
+        this.levelsAmount = levelsAmount;
     }
     update(level, lives, score) {
-        this.levelEl.textContent = `Level:${level}`;
+        this.levelEl.textContent = `Level:${level}/${this.levelsAmount}`;
         this.livesEl.textContent = `Lives:${lives}`;
         this.scoreEl.textContent = `Score:${score}`;
     }
@@ -382,8 +384,7 @@ class HitPoint {
         this.opacity = 1;
         this.color = color;
     }
-    update(currentTime) {
-        currentTime - this.startTime;
+    update() {
         this.pos.y -= 1.5;
         this.opacity -= .025;
         if (this.opacity <= 0.1) {
@@ -393,8 +394,8 @@ class HitPoint {
     draw() {
         this.ctx.globalAlpha = this.opacity;
         this.ctx.fillStyle = this.color;
-        this.ctx.font = "20px sans-serif";
-        this.ctx.textAlign = "center";
+        this.ctx.font = '20px sans-serif';
+        this.ctx.textAlign = 'center';
         this.ctx.fillText(`${this.points}`, this.pos.x, this.pos.y);
         this.ctx.globalAlpha = 1;
     }
@@ -510,9 +511,9 @@ const KEYS = {
 // Game variables
 const LEVEL_START_SCREEN_DURATION = 3000;
 const STARTING_LIVES = 3;
-let STARTING_LEVEL = 1;
+const STARTING_LEVEL = 1;
+const STARTING_SCORE = 0;
 let GAME_STATE = GameState.START;
-let STARTING_SCORE = 0;
 const ADD_POWERUP_THRESHOLD = 0.1;
 let player;
 let infos;
@@ -582,7 +583,7 @@ function init() {
     window.addEventListener('keyup', handleKeyup);
 }
 function initGame() {
-    infos = new Infos();
+    infos = new Infos(LEVELS.length);
     score = STARTING_SCORE;
     lives = STARTING_LIVES;
     level = STARTING_LEVEL;
@@ -612,12 +613,11 @@ function gameloop(time) {
     accumulatedFrameTime += elapsedTimeBetweenFrames;
     while (accumulatedFrameTime >= FRAME_DURATION) {
         // HERE UPDATE GAME ELEMENTS
-        // update(frameDuration);
         player.update(KEYS);
         updateBullets();
         checkPlayerRoidsCollisions();
         checkBulletsRoidsCollisions();
-        for (let roid of roids) {
+        for (const roid of roids) {
             roid.update();
         }
         updatePoints();
@@ -633,13 +633,13 @@ function gameloop(time) {
 function renderGame() {
     infos.update(level, lives, score);
     player.draw();
-    for (let bullet of bullets) {
+    for (const bullet of bullets) {
         bullet.draw();
     }
-    for (let roid of roids) {
+    for (const roid of roids) {
         roid.draw();
     }
-    for (let hitPoint of hitPoints) {
+    for (const hitPoint of hitPoints) {
         hitPoint.draw();
     }
     powerUp && powerUp.draw();
@@ -731,7 +731,7 @@ function updatePoints() {
     for (let i = hitPoints.length; i > 0; i--) {
         const hitPoint = hitPoints[i - 1];
         if (hitPoint.opacity > 0) {
-            hitPoint.update(Date.now());
+            hitPoint.update();
         }
         else {
             hitPoints.splice(i - 1, 1);

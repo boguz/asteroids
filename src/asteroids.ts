@@ -133,7 +133,7 @@ function init() {
 }
 
 function initGame() {
-	infos = new Infos();
+	infos = new Infos(LEVELS.length);
 	score = STARTING_SCORE;
 	lives = STARTING_LIVES;
 	level = STARTING_LEVEL;
@@ -316,7 +316,7 @@ function updatePoints() {
 	for (let i = hitPoints.length; i > 0; i--) {
 		const hitPoint = hitPoints[i - 1];
 		if (hitPoint.opacity > 0) {
-			hitPoint.update(Date.now());
+			hitPoint.update();
 		} else {
 			hitPoints.splice(i - 1, 1);
 		}
