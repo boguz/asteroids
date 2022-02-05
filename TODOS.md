@@ -1,6 +1,6 @@
 # TODOS / IDEAS
-- [ ] Add levels
+- [ ] Add linting
 - [ ] Add "power ups"
 - [ ] Better collision detection (triangle with circle)
-- [ ] Better "loose live" animation. Red spaceship?
-- [ ] add player start invisibillity setter
+- [ ] Add win screen if all levels cleared
+- [ ] Add highest score (save on localStorage. show on gameover and win screens)

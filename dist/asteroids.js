@@ -267,26 +267,94 @@ class Roid {
 
 const LEVELS = [
     {
-        //level: 1,
-        //numberOfRoids: 4,
-        //maxRoidGrade: 3,
-        //maxRoidSpeed: 3
         level: 1,
-        numberOfRoids: 1,
-        maxRoidGrade: 1,
-        maxRoidSpeed: 1
+        numberOfRoids: 4,
+        maxRoidGrade: 3,
+        maxRoidSpeed: 2
     },
     {
         level: 2,
-        numberOfRoids: 6,
+        numberOfRoids: 4,
         maxRoidGrade: 3,
-        maxRoidSpeed: 3.5
+        maxRoidSpeed: 3
     },
     {
         level: 3,
-        numberOfRoids: 8,
+        numberOfRoids: 5,
+        maxRoidGrade: 4,
+        maxRoidSpeed: 3.5
+    },
+    {
+        level: 4,
+        numberOfRoids: 5,
         maxRoidGrade: 4,
         maxRoidSpeed: 4
+    },
+    {
+        level: 5,
+        numberOfRoids: 6,
+        maxRoidGrade: 4,
+        maxRoidSpeed: 4
+    },
+    {
+        level: 6,
+        numberOfRoids: 6,
+        maxRoidGrade: 4,
+        maxRoidSpeed: 4
+    },
+    {
+        level: 7,
+        numberOfRoids: 7,
+        maxRoidGrade: 4,
+        maxRoidSpeed: 4
+    },
+    {
+        level: 8,
+        numberOfRoids: 8,
+        maxRoidGrade: 5,
+        maxRoidSpeed: 4
+    },
+    {
+        level: 9,
+        numberOfRoids: 9,
+        maxRoidGrade: 5,
+        maxRoidSpeed: 5
+    },
+    {
+        level: 10,
+        numberOfRoids: 10,
+        maxRoidGrade: 5,
+        maxRoidSpeed: 5
+    },
+    {
+        level: 11,
+        numberOfRoids: 11,
+        maxRoidGrade: 5,
+        maxRoidSpeed: 5
+    },
+    {
+        level: 12,
+        numberOfRoids: 12,
+        maxRoidGrade: 5,
+        maxRoidSpeed: 5
+    },
+    {
+        level: 13,
+        numberOfRoids: 14,
+        maxRoidGrade: 5,
+        maxRoidSpeed: 5
+    },
+    {
+        level: 14,
+        numberOfRoids: 17,
+        maxRoidGrade: 5,
+        maxRoidSpeed: 5
+    },
+    {
+        level: 15,
+        numberOfRoids: 20,
+        maxRoidGrade: 5,
+        maxRoidSpeed: 5
     }
 ];
 
@@ -332,6 +400,77 @@ class HitPoint {
     }
 }
 
+class PowerUp {
+    canvas;
+    ctx;
+    pos;
+    size;
+    direction;
+    vel;
+    speed;
+    color;
+    sidesCount;
+    rotation;
+    rotationSpeed;
+    radians;
+    type;
+    bonusPoints;
+    possibleTypes = ['bonus', 'bonus', 'bonus', 'bonus', 'live'];
+    constructor(canvas, ctx, color) {
+        this.canvas = canvas;
+        this.ctx = ctx;
+        this.pos = {
+            x: Math.floor(Math.random() * this.canvas.width),
+            y: Math.floor(Math.random() * this.canvas.height),
+        };
+        this.size = 26;
+        this.direction = Math.random() * Math.PI * 2;
+        this.speed = 1;
+        this.vel = {
+            x: Math.random() * this.speed * (Math.random() < 0.5 ? 1 : -1),
+            y: Math.random() * this.speed * (Math.random() < 0.5 ? 1 : -1),
+        };
+        this.color = color;
+        this.sidesCount = 5;
+        this.rotation = 0;
+        this.rotationSpeed = Math.PI / 180;
+        this.radians = this.rotation * Math.PI / 180;
+        this.type = this.possibleTypes[Math.floor(Math.random() * this.possibleTypes.length)];
+        this.bonusPoints = this.type === 'bonus' ? '1000' : '+1up';
+    }
+    update() {
+        this.radians += this.rotationSpeed;
+        this.pos.x += this.vel.x;
+        this.pos.y += this.vel.y;
+        if (this.pos.x < 0) {
+            this.pos.x = this.canvas.width;
+        }
+        else if (this.pos.x > this.canvas.width) {
+            this.pos.x = 0;
+        }
+        if (this.pos.y < 0) {
+            this.pos.y = this.canvas.height;
+        }
+        else if (this.pos.y > this.canvas.height) {
+            this.pos.y = 0;
+        }
+    }
+    draw() {
+        this.ctx.translate(this.pos.x, this.pos.y);
+        this.ctx.rotate(this.radians);
+        this.ctx.fillStyle = this.color;
+        this.ctx.beginPath();
+        this.ctx.moveTo(this.size / 2 * Math.cos(0), this.size / 2 * Math.sin(0));
+        for (let i = 0; i < this.sidesCount; i++) {
+            this.ctx.lineTo(this.size / 2 * Math.cos(i * 2 * Math.PI / this.sidesCount), this.size / 2 * Math.sin(i * 2 * Math.PI / this.sidesCount));
+        }
+        this.ctx.fill();
+        this.ctx.closePath();
+        this.ctx.rotate(-this.radians);
+        this.ctx.translate(-this.pos.x, -this.pos.y);
+    }
+}
+
 // Get page elements
 const canvas = document.querySelector('#canvas');
 const ctx = canvas.getContext('2d');
@@ -352,6 +491,7 @@ const COLORS = {
     SHIP: 'hsl(20, 16%, 93%)',
     BULLET: 'hsl(291, 80%, 50%)',
     POINTS: 'hsl(291, 60%, 75%)',
+    POWER_UP: 'hsl(187, 71%, 50%)',
     ROIDS: [
         'hsl(53, 100%, 73%)',
         'hsl(45, 100%, 51%)',
@@ -373,12 +513,14 @@ const STARTING_LIVES = 3;
 let STARTING_LEVEL = 1;
 let GAME_STATE = GameState.START;
 let STARTING_SCORE = 0;
+const ADD_POWERUP_THRESHOLD = 0.1;
 let player;
 let infos;
 let bullets = [];
 let roids = [];
 let hitPoints = [];
 let currentLevel;
+let powerUp = null;
 let level = 1;
 let score = 0;
 let lives = STARTING_LIVES;
@@ -479,6 +621,7 @@ function gameloop(time) {
             roid.update();
         }
         updatePoints();
+        powerUp && updatePowerUp();
         accumulatedFrameTime -= FRAME_DURATION;
     }
     // HERE RENDER GAME ELEMENTS
@@ -499,6 +642,7 @@ function renderGame() {
     for (let hitPoint of hitPoints) {
         hitPoint.draw();
     }
+    powerUp && powerUp.draw();
 }
 /**
  * Update bullet array
@@ -535,6 +679,9 @@ function checkBulletsRoidsCollisions() {
                 hitPoints.push(new HitPoint(ctx, roid.pos, roid.points, COLORS.POINTS));
                 roids.splice(j - 1, 1);
                 score += roid.points;
+                if (roids.length && !powerUp) {
+                    addPowerUp();
+                }
                 return checkBulletsRoidsCollisions();
             }
         }
@@ -543,6 +690,28 @@ function checkBulletsRoidsCollisions() {
         level++;
         initLevel();
     }
+}
+function addPowerUp() {
+    const shouldAddPowerUp = Math.random() < ADD_POWERUP_THRESHOLD;
+    if (shouldAddPowerUp) {
+        powerUp = new PowerUp(canvas, ctx, COLORS.POWER_UP);
+    }
+}
+function updatePowerUp() {
+    for (let i = bullets.length; i > 0; i--) {
+        if (bullets[i - 1] && powerUp && areTwoElementsColliding(bullets[i - 1], powerUp)) {
+            bullets.splice(i - 1, 1);
+            hitPoints.push(new HitPoint(ctx, powerUp.pos, powerUp.bonusPoints, COLORS.POWER_UP));
+            if (powerUp.type === 'bonus') {
+                score += +powerUp.bonusPoints;
+            }
+            else if (powerUp.type === 'live') {
+                lives++;
+            }
+            powerUp = null;
+        }
+    }
+    powerUp && powerUp.update();
 }
 function checkPlayerRoidsCollisions() {
     if (player.isInvencible)

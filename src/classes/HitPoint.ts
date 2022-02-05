@@ -3,7 +3,7 @@ import { PositionInterface } from "../types/types.js";
 export class HitPoint {
 	private ctx: CanvasRenderingContext2D;
 	private pos: PositionInterface;
-	private points: number;
+	private points: number | string;
 	private ANIMATION_DURATION: number;
 	private startTime: number;
 	public opacity: number;
@@ -12,7 +12,7 @@ export class HitPoint {
 	constructor(
 		ctx: CanvasRenderingContext2D,
 		pos: PositionInterface,
-		points: number,
+		points: number | string,
 		color: string,
 	) {
 		this.ctx = ctx;

@@ -6,7 +6,8 @@ import { Infos } from "./classes/Infos.js";
 import { Roid } from "./classes/Roid.js";
 import { LEVELS } from "./levels.js";
 import { areTwoElementsColliding } from "./utils/collisionDetection.js";
-import { HitPoint } from "./classes/HitPoint";
+import { HitPoint } from "./classes/HitPoint.js";
+import { PowerUp } from "./classes/PowerUp.js";
 
 // Get page elements
 const canvas = document.querySelector('#canvas') as HTMLCanvasElement;
@@ -31,6 +32,7 @@ const COLORS = {
 	SHIP: 'hsl(20, 16%, 93%)',
 	BULLET: 'hsl(291, 80%, 50%)',
 	POINTS: 'hsl(291, 60%, 75%)',
+	POWER_UP: 'hsl(187, 71%, 50%)',
 	ROIDS: [
 		'hsl(53, 100%, 73%)',
 		'hsl(45, 100%, 51%)',
@@ -54,6 +56,7 @@ const STARTING_LIVES = 3;
 let STARTING_LEVEL = 1;
 let GAME_STATE: GameState = GameState.START;
 let STARTING_SCORE = 0;
+const ADD_POWERUP_THRESHOLD = 0.1;
 
 let player: Player;
 let infos: Infos;
@@ -61,6 +64,7 @@ let bullets: Bullet[] = [];
 let roids: Roid[] = [];
 let hitPoints: HitPoint[] = [];
 let currentLevel: LevelInterface;
+let powerUp: PowerUp | null = null;
 
 let level = 1;
 let score = 0;
@@ -174,7 +178,9 @@ function gameloop(time: number) {
 		for (let roid of roids) {
 			roid.update();
 		}
-		updatePoints()
+		updatePoints();
+		powerUp && updatePowerUp();
+		
 		accumulatedFrameTime -= FRAME_DURATION;
 	}
 	
@@ -197,6 +203,7 @@ function renderGame() {
 	for (let hitPoint of hitPoints) {
 		hitPoint.draw();
 	}
+	powerUp && powerUp.draw();
 }
 
 /**
@@ -251,6 +258,10 @@ function checkBulletsRoidsCollisions(): void {
 				roids.splice(j - 1, 1);
 				score += roid.points;
 				
+				if (roids.length && !powerUp) {
+					addPowerUp();
+				}
+				
 				return checkBulletsRoidsCollisions();
 			}
 		}
@@ -260,6 +271,30 @@ function checkBulletsRoidsCollisions(): void {
 		level++;
 		initLevel();
 	}
+}
+
+function addPowerUp() {
+	const shouldAddPowerUp = Math.random() < ADD_POWERUP_THRESHOLD;
+	if (shouldAddPowerUp) {
+		powerUp = new PowerUp(canvas, ctx, COLORS.POWER_UP);
+	}
+}
+
+function updatePowerUp() {
+	for (let i = bullets.length; i > 0; i--) {
+		if (bullets[i-1] && powerUp && areTwoElementsColliding(bullets[i -1], powerUp!)) {
+			bullets.splice(i - 1, 1);
+			hitPoints.push(new HitPoint(ctx, powerUp!.pos, powerUp!.bonusPoints, COLORS.POWER_UP));
+			if (powerUp!.type === 'bonus') {
+				score += +powerUp!.bonusPoints;
+			} else if (powerUp!.type === 'live') {
+				lives++;
+			}
+			powerUp = null;
+		}
+	}
+	
+	powerUp && powerUp.update();
 }
 
 function checkPlayerRoidsCollisions() {
@@ -276,7 +311,6 @@ function checkPlayerRoidsCollisions() {
 	if (lives === 0) {
 		setGameState(GameState.GAME_OVER);
 	}
-	
 }
 
 function updatePoints() {
