@@ -1,10 +1,10 @@
-import { PositionInterface } from "../types/types.js";
-import { randomIntFromInterval } from "../utils/utils.js";
+import { PositionInterface } from '../types/types.js';
+import { randomIntFromInterval } from '../utils/utils.js';
 
 export class Roid {
 	private canvas: HTMLCanvasElement;
 	private ctx: CanvasRenderingContext2D;
-	public pos: PositionInterface
+	public pos: PositionInterface;
 	public grade: number;
 	public size: number;
 	private direction: number;
@@ -30,9 +30,9 @@ export class Roid {
 		this.pos = startPos
 			? startPos
 			: {
-			x: Math.floor(Math.random() * this.canvas.width),
-			y: Math.floor(Math.random() * this.canvas.height),
-		}
+				x: Math.floor(Math.random() * this.canvas.width),
+				y: Math.floor(Math.random() * this.canvas.height),
+			};
 		this.grade = grade ? grade : randomIntFromInterval(1, maxRoidGrade);
 		this.size = this.sizes[this.grade - 1];
 		this.direction = Math.random() * Math.PI * 2;
@@ -40,14 +40,14 @@ export class Roid {
 		this.vel = {
 			x: Math.random() * this.speed * (Math.random() < 0.5 ? 1 : -1),
 			y: Math.random() * this.speed * (Math.random() < 0.5 ? 1 : -1),
-		}
+		};
 		this.color = possibleColors[this.grade - 1];
 		this.points = this.possiblePoints[this.grade - 1];
 	}
 	
 	update() {
 		this.pos.x += this.vel.x;
-		this.pos.y += this.vel.y
+		this.pos.y += this.vel.y;
 		
 		if (this.pos.x < 0) {
 			this.pos.x = this.canvas.width;

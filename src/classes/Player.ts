@@ -1,4 +1,4 @@
-import { KeysInterface, PositionInterface } from "../types/types.js";
+import { KeysInterface, PositionInterface } from '../types/types.js';
 
 export class Player {
 	private canvas: HTMLCanvasElement;
@@ -7,7 +7,7 @@ export class Player {
 	public radius: number;
 	public pos: PositionInterface;
 	private vel: { x: number; y: number };
-	private colors: { ship: string, thrusterInner: string, thrusterOuter: string }
+	private colors: { ship: string, thrusterInner: string, thrusterOuter: string };
 	public direction: number;
 	private rotationSpeed: number;
 	private isThrusting: boolean;
@@ -37,7 +37,7 @@ export class Player {
 		this.pos = {
 			x: initialPosition.x,
 			y: initialPosition.y
-		}
+		};
 		this.vel = {
 			x: 0,
 			y: 0,

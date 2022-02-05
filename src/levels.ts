@@ -1,4 +1,4 @@
-import { LevelInterface } from "./types/types.js";
+import { LevelInterface } from './types/types.js';
 
 export const LEVELS: LevelInterface[] = [
 	{
@@ -91,4 +91,4 @@ export const LEVELS: LevelInterface[] = [
 		maxRoidGrade: 5,
 		maxRoidSpeed: 5
 	}
-]
+];

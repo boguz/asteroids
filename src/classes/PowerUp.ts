@@ -1,9 +1,9 @@
-import { PositionInterface } from "../types/types.js";
+import { PositionInterface } from '../types/types.js';
 
 export class PowerUp {
 	private canvas: HTMLCanvasElement;
 	private ctx: CanvasRenderingContext2D;
-	public pos: PositionInterface
+	public pos: PositionInterface;
 	public size: number;
 	private direction: number;
 	private vel: { x: number, y: number };
@@ -29,14 +29,14 @@ export class PowerUp {
 		this.pos = {
 			x: Math.floor(Math.random() * this.canvas.width),
 			y: Math.floor(Math.random() * this.canvas.height),
-		}
+		};
 		this.size = 26;
 		this.direction = Math.random() * Math.PI * 2;
 		this.speed = 1;
 		this.vel = {
 			x: Math.random() * this.speed * (Math.random() < 0.5 ? 1 : -1),
 			y: Math.random() * this.speed * (Math.random() < 0.5 ? 1 : -1),
-		}
+		};
 		this.color = color;
 		this.sidesCount = 5;
 		this.rotation = 0;
@@ -49,7 +49,7 @@ export class PowerUp {
 	update() {
 		this.radians += this.rotationSpeed;
 		this.pos.x += this.vel.x;
-		this.pos.y += this.vel.y
+		this.pos.y += this.vel.y;
 		
 		if (this.pos.x < 0) {
 			this.pos.x = this.canvas.width;

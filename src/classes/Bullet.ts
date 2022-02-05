@@ -1,4 +1,4 @@
-import { PositionInterface } from "../types/types.js";
+import { PositionInterface } from '../types/types.js';
 
 export class Bullet {
 	private ctx: CanvasRenderingContext2D;
@@ -20,7 +20,7 @@ export class Bullet {
 		this.vel = {
 			x: 5,
 			y: 5,
-		}
+		};
 	}
 	
 	draw() {

@@ -1,13 +1,13 @@
-import { GameState, KeysInterface, LevelInterface } from "./types/types";
-import { Player } from "./classes/Player.js";
-import { utils } from "./utils/utils.js";
-import { Bullet } from "./classes/Bullet.js";
-import { Infos } from "./classes/Infos.js";
-import { Roid } from "./classes/Roid.js";
-import { LEVELS } from "./levels.js";
-import { areTwoElementsColliding } from "./utils/collisionDetection.js";
-import { HitPoint } from "./classes/HitPoint.js";
-import { PowerUp } from "./classes/PowerUp.js";
+import { GameState, KeysInterface, LevelInterface } from './types/types';
+import { Player } from './classes/Player.js';
+import { utils } from './utils/utils.js';
+import { Bullet } from './classes/Bullet.js';
+import { Infos } from './classes/Infos.js';
+import { Roid } from './classes/Roid.js';
+import { LEVELS } from './levels.js';
+import { areTwoElementsColliding } from './utils/collisionDetection.js';
+import { HitPoint } from './classes/HitPoint.js';
+import { PowerUp } from './classes/PowerUp.js';
 
 // Get page elements
 const canvas = document.querySelector('#canvas') as HTMLCanvasElement;
@@ -48,14 +48,14 @@ const KEYS: KeysInterface = {
 	RIGHT: false,
 	UP: false,
 	SPACE: false,
-}
+};
 
 // Game variables
 const LEVEL_START_SCREEN_DURATION = 3000;
 const STARTING_LIVES = 3;
-let STARTING_LEVEL = 1;
+const STARTING_LEVEL = 1;
+const STARTING_SCORE = 0;
 let GAME_STATE: GameState = GameState.START;
-let STARTING_SCORE = 0;
 const ADD_POWERUP_THRESHOLD = 0.1;
 
 let player: Player;
@@ -75,8 +75,8 @@ function handleKeydown(event: KeyboardEvent) {
 		const bulletPos = {
 			x: player.pos.x + 4 / 3 * player.radius * Math.cos(player.direction),
 			y: player.pos.y - 4 / 3 * player.radius * Math.sin(player.direction)
-		}
-		bullets.push(new Bullet(ctx, bulletPos, player.direction, level, COLORS.BULLET))
+		};
+		bullets.push(new Bullet(ctx, bulletPos, player.direction, level, COLORS.BULLET));
 	}
 	
 	if (GAME_STATE === GameState.START && event.code === 'Space') {
@@ -128,15 +128,15 @@ function init() {
 	canvas.height = window.innerHeight;
 	
 	setGameState(GameState.START);
-	window.addEventListener('keydown', handleKeydown)
-	window.addEventListener('keyup', handleKeyup)
+	window.addEventListener('keydown', handleKeydown);
+	window.addEventListener('keyup', handleKeyup);
 }
 
 function initGame() {
 	infos = new Infos();
 	score = STARTING_SCORE;
 	lives = STARTING_LIVES;
-	level = STARTING_LEVEL
+	level = STARTING_LEVEL;
 	initLevel();
 }
 
@@ -169,13 +169,12 @@ function gameloop(time: number) {
 	accumulatedFrameTime += elapsedTimeBetweenFrames;
 	while (accumulatedFrameTime >= FRAME_DURATION) {
 		// HERE UPDATE GAME ELEMENTS
-		// update(frameDuration);
 		player.update(KEYS);
 		
 		updateBullets();
 		checkPlayerRoidsCollisions();
 		checkBulletsRoidsCollisions();
-		for (let roid of roids) {
+		for (const roid of roids) {
 			roid.update();
 		}
 		updatePoints();
@@ -194,13 +193,13 @@ function gameloop(time: number) {
 function renderGame() {
 	infos.update(level, lives, score);
 	player.draw();
-	for (let bullet of bullets) {
+	for (const bullet of bullets) {
 		bullet.draw();
 	}
-	for (let roid of roids) {
+	for (const roid of roids) {
 		roid.draw();
 	}
-	for (let hitPoint of hitPoints) {
+	for (const hitPoint of hitPoints) {
 		hitPoint.draw();
 	}
 	powerUp && powerUp.draw();
@@ -254,7 +253,7 @@ function checkBulletsRoidsCollisions(): void {
 						{x: roid.pos.x - 1, y: roid.pos.y - 1}
 					));
 				}
-				hitPoints.push(new HitPoint(ctx, roid.pos, roid.points, COLORS.POINTS))
+				hitPoints.push(new HitPoint(ctx, roid.pos, roid.points, COLORS.POINTS));
 				roids.splice(j - 1, 1);
 				score += roid.points;
 				
@@ -329,7 +328,7 @@ function showPlayerHitCanvasBorder() {
 	
 	canvas.addEventListener('animationend', (event: AnimationEvent) => {
 		if (event.animationName === 'canvasBorderAnimation') {
-			canvas.classList.remove('canvas--player-hit')
+			canvas.classList.remove('canvas--player-hit');
 		}
 	});
 }

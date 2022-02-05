@@ -1,4 +1,4 @@
-import { PositionInterface } from "../types/types.js";
+import { PositionInterface } from '../types/types.js';
 
 export class HitPoint {
 	private ctx: CanvasRenderingContext2D;
@@ -24,20 +24,19 @@ export class HitPoint {
 		this.color = color;
 	}
 	
-	update(currentTime: number) {
-		const delta = currentTime - this.startTime;
+	update() {
 		this.pos.y -= 1.5;
 		this.opacity -= .025;
 		if (this.opacity <= 0.1) {
-			this.opacity = 0
+			this.opacity = 0;
 		}
 	}
 	
 	draw() {
 		this.ctx.globalAlpha = this.opacity;
 		this.ctx.fillStyle = this.color;
-		this.ctx.font = "20px sans-serif";
-		this.ctx.textAlign = "center";
+		this.ctx.font = '20px sans-serif';
+		this.ctx.textAlign = 'center';
 		this.ctx.fillText(`${this.points}`,this.pos.x,this.pos.y);
 		this.ctx.globalAlpha = 1;
 	}
