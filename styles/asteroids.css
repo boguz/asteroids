@@ -6,11 +6,32 @@
     --canvas-player-hit-duration: 2s;
 }
 
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
     font-family: 'Press Start 2P', cursive;
+}
+
+.warning {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-white);
+    background-color: var(--color-bg);
+    padding: 2rem;
+    text-align: center;
+    line-height: 2;
+}
+
+.game {
+    display: none;
 }
 
 .canvas,
@@ -95,4 +116,14 @@
 
 .hiscore {
     margin-bottom: 1rem;
+}
+
+@media screen and (min-width: 1200px) {
+    .game {
+        display: contents;
+    }
+
+    .warning {
+        display: none;
+    }
 }

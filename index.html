@@ -16,34 +16,41 @@
     <script src="./dist/asteroids.js" type="module" defer></script>
 </head>
 <body>
-
-    <canvas id="canvas" class="canvas"></canvas>
-
-    <div class="start">
-        <h1 class="start__title">Asteroids JS</h1>
-        <p class="start__info">Press SPACE to start game</p>
-        <p class="start__info">Use A, W, D to move + SPACE to shoot</p>
+    <div class="warning">
+        <p class="warning__text">At the moment only available on desktop!</p>
     </div>
 
-    <div class="end">
-        <h1 class="end__title">GAME OVER</h1>
-        <p class="end__info">Press SPACE to play again</p>
-        <div class="highscores">
-            <p class="hiscore hiscore-title">HI SCORES</p>
-            <p class="hiscore hiscore--one">-</p>
-            <p class="hiscore hiscore--two">-</p>
-            <p class="hiscore hiscore--three">-</p>
+    <div class="game">
+
+        <canvas id="canvas" class="canvas"></canvas>
+
+        <div class="start">
+            <h1 class="start__title">Asteroids JS</h1>
+            <p class="start__info">Press SPACE to start game</p>
+            <p class="start__info">Use A, W, D to move + SPACE to shoot</p>
         </div>
-    </div>
 
-    <div class="level-start">
-        <h1 class="level-start__title">LEVEL START</h1>
-    </div>
+        <div class="end">
+            <h1 class="end__title">GAME OVER</h1>
+            <p class="end__info">Press SPACE to play again</p>
+            <div class="highscores">
+                <p class="hiscore hiscore-title">HI SCORES</p>
+                <p class="hiscore hiscore--one">-</p>
+                <p class="hiscore hiscore--two">-</p>
+                <p class="hiscore hiscore--three">-</p>
+            </div>
+        </div>
 
-    <div class="infos infos--start">
-        <p class="infos_lives"></p>
-        <p class="infos_score"></p>
-        <p class="infos_level"></p>
+        <div class="level-start">
+            <h1 class="level-start__title">LEVEL START</h1>
+        </div>
+
+        <div class="infos infos--start">
+            <p class="infos_lives"></p>
+            <p class="infos_score"></p>
+            <p class="infos_level"></p>
+        </div>
+
     </div>
 
 </body>

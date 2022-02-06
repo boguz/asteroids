@@ -649,6 +649,19 @@ const HISCORE_EL_ONE = document.querySelector('.hiscore--one');
 const HISCORE_EL_TWO = document.querySelector('.hiscore--two');
 const HISCORE_EL_THREE = document.querySelector('.hiscore--three');
 const HISCORE_ELEMENTS = [HISCORE_EL_ONE, HISCORE_EL_TWO, HISCORE_EL_THREE];
+// Mediaqueries
+const MIN_WIDTH = 1200;
+const MATCH_MEDIA = window.matchMedia(`(min-width: ${MIN_WIDTH}px)`);
+let isDesktop = window.matchMedia(`(min-width: ${MIN_WIDTH}px)`).matches;
+MATCH_MEDIA.addListener(event => {
+    isDesktop = event.matches;
+    if (isDesktop && GAME_STATE === GameState.START) {
+        init();
+    }
+    else if (!isDesktop) {
+        setGameState(GameState.START);
+    }
+});
 // Game animation variables
 const FPS = 60;
 const FRAME_DURATION = 1000 / FPS;
@@ -1063,6 +1076,8 @@ function updateSavedScore() {
         HISCORE_ELEMENTS[i].textContent = `${i + 1}. ${hiScoreName}: ${hiScoreScore}`;
     }
 }
-// Init app
-init();
+// Init app if desktop device
+if (isDesktop) {
+    init();
+}
 //# sourceMappingURL=asteroids.js.map
