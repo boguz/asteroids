@@ -15,8 +15,12 @@ export class PowerUp {
 	private radians: number;
 	public type: string;
 	public bonusPoints: string;
+	private creationTime: number;
+	private duration: number;
+	public opacity: number;
+	private fadeSpeed: number;
 	
-	private possibleTypes = ['bonus', 'bonus', 'bonus', 'bonus', 'live'];
+	private possibleTypes = ['bonus', 'bonus', 'bonus', 'bonus', 'bonus', 'bonus', 'bonus', 'bonus', 'bonus', 'live'];
 	
 	constructor(
 		canvas: HTMLCanvasElement,
@@ -44,9 +48,22 @@ export class PowerUp {
 		this.radians = this.rotation * Math.PI / 180;
 		this.type = this.possibleTypes[Math.floor(Math.random() * this.possibleTypes.length)];
 		this.bonusPoints = this.type === 'bonus' ? '1000' : '+1up';
+		this.creationTime = Date.now();
+		this.duration = 5000;
+		this.opacity = 1;
+		this.fadeSpeed = 0.01;
 	}
 	
 	update() {
+		if (Date.now() - this.creationTime > this.duration && this.opacity > 0) {
+			this.opacity -= this.fadeSpeed;
+			
+			if (this.opacity <= 0.05) {
+				this.opacity = 0;
+			}
+		}
+		
+		
 		this.radians += this.rotationSpeed;
 		this.pos.x += this.vel.x;
 		this.pos.y += this.vel.y;
@@ -65,6 +82,7 @@ export class PowerUp {
 	}
 	
 	draw() {
+		this.ctx.globalAlpha = this.opacity;
 		this.ctx.translate(this.pos.x, this.pos.y);
 		this.ctx.rotate(this.radians);
 		this.ctx.fillStyle = this.color;
@@ -84,5 +102,6 @@ export class PowerUp {
 		
 		this.ctx.rotate(-this.radians);
 		this.ctx.translate(-this.pos.x, -this.pos.y);
+		this.ctx.globalAlpha = 1;
 	}
 }

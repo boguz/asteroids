@@ -271,100 +271,94 @@ class Roid {
 const LEVELS = [
     {
         level: 1,
-        numberOfRoids: 1,
-        maxRoidGrade: 1,
+        numberOfRoids: 4,
+        maxRoidGrade: 3,
         maxRoidSpeed: 2
+    },
+    {
+        level: 2,
+        numberOfRoids: 4,
+        maxRoidGrade: 3,
+        maxRoidSpeed: 3
+    },
+    {
+        level: 3,
+        numberOfRoids: 5,
+        maxRoidGrade: 4,
+        maxRoidSpeed: 3.5
+    },
+    {
+        level: 4,
+        numberOfRoids: 5,
+        maxRoidGrade: 4,
+        maxRoidSpeed: 4
+    },
+    {
+        level: 5,
+        numberOfRoids: 6,
+        maxRoidGrade: 4,
+        maxRoidSpeed: 4
+    },
+    {
+        level: 6,
+        numberOfRoids: 6,
+        maxRoidGrade: 4,
+        maxRoidSpeed: 4
+    },
+    {
+        level: 7,
+        numberOfRoids: 7,
+        maxRoidGrade: 4,
+        maxRoidSpeed: 4
+    },
+    {
+        level: 8,
+        numberOfRoids: 8,
+        maxRoidGrade: 5,
+        maxRoidSpeed: 4
+    },
+    {
+        level: 9,
+        numberOfRoids: 9,
+        maxRoidGrade: 5,
+        maxRoidSpeed: 5
+    },
+    {
+        level: 10,
+        numberOfRoids: 10,
+        maxRoidGrade: 5,
+        maxRoidSpeed: 5
+    },
+    {
+        level: 11,
+        numberOfRoids: 11,
+        maxRoidGrade: 5,
+        maxRoidSpeed: 5
+    },
+    {
+        level: 12,
+        numberOfRoids: 12,
+        maxRoidGrade: 5,
+        maxRoidSpeed: 5
+    },
+    {
+        level: 13,
+        numberOfRoids: 14,
+        maxRoidGrade: 5,
+        maxRoidSpeed: 5
+    },
+    {
+        level: 14,
+        numberOfRoids: 17,
+        maxRoidGrade: 5,
+        maxRoidSpeed: 5
+    },
+    {
+        level: 15,
+        numberOfRoids: 20,
+        maxRoidGrade: 5,
+        maxRoidSpeed: 5
     }
-    // {
-    // 	level: 1,
-    // 	numberOfRoids: 4,
-    // 	maxRoidGrade: 3,
-    // 	maxRoidSpeed: 2
-    // },
-    // {
-    // 	level: 2,
-    // 	numberOfRoids: 4,
-    // 	maxRoidGrade: 3,
-    // 	maxRoidSpeed: 3
-    // },
-    // {
-    // 	level: 3,
-    // 	numberOfRoids: 5,
-    // 	maxRoidGrade: 4,
-    // 	maxRoidSpeed: 3.5
-    // },
-    // {
-    // 	level: 4,
-    // 	numberOfRoids: 5,
-    // 	maxRoidGrade: 4,
-    // 	maxRoidSpeed: 4
-    // },
-    // {
-    // 	level: 5,
-    // 	numberOfRoids: 6,
-    // 	maxRoidGrade: 4,
-    // 	maxRoidSpeed: 4
-    // },
-    // {
-    // 	level: 6,
-    // 	numberOfRoids: 6,
-    // 	maxRoidGrade: 4,
-    // 	maxRoidSpeed: 4
-    // },
-    // {
-    // 	level: 7,
-    // 	numberOfRoids: 7,
-    // 	maxRoidGrade: 4,
-    // 	maxRoidSpeed: 4
-    // },
-    // {
-    // 	level: 8,
-    // 	numberOfRoids: 8,
-    // 	maxRoidGrade: 5,
-    // 	maxRoidSpeed: 4
-    // },
-    // {
-    // 	level: 9,
-    // 	numberOfRoids: 9,
-    // 	maxRoidGrade: 5,
-    // 	maxRoidSpeed: 5
-    // },
-    // {
-    // 	level: 10,
-    // 	numberOfRoids: 10,
-    // 	maxRoidGrade: 5,
-    // 	maxRoidSpeed: 5
-    // },
-    // {
-    // 	level: 11,
-    // 	numberOfRoids: 11,
-    // 	maxRoidGrade: 5,
-    // 	maxRoidSpeed: 5
-    // },
-    // {
-    // 	level: 12,
-    // 	numberOfRoids: 12,
-    // 	maxRoidGrade: 5,
-    // 	maxRoidSpeed: 5
-    // },
-    // {
-    // 	level: 13,
-    // 	numberOfRoids: 14,
-    // 	maxRoidGrade: 5,
-    // 	maxRoidSpeed: 5
-    // },
-    // {
-    // 	level: 14,
-    // 	numberOfRoids: 17,
-    // 	maxRoidGrade: 5,
-    // 	maxRoidSpeed: 5
-    // },
-    // {
-    // 	level: 15,
-    // 	numberOfRoids: 20,
-    // 	maxRoidGrade: 5,
-    // 	maxRoidSpeed: 5
-    // }
 ];
 
 function areTwoElementsColliding(elOne, elTwo) {
@@ -423,7 +417,11 @@ class PowerUp {
     radians;
     type;
     bonusPoints;
-    possibleTypes = ['bonus', 'bonus', 'bonus', 'bonus', 'live'];
+    creationTime;
+    duration;
+    opacity;
+    fadeSpeed;
+    possibleTypes = ['bonus', 'bonus', 'bonus', 'bonus', 'bonus', 'bonus', 'bonus', 'bonus', 'bonus', 'live'];
     constructor(canvas, ctx, color) {
         this.canvas = canvas;
         this.ctx = ctx;
@@ -445,8 +443,18 @@ class PowerUp {
         this.radians = this.rotation * Math.PI / 180;
         this.type = this.possibleTypes[Math.floor(Math.random() * this.possibleTypes.length)];
         this.bonusPoints = this.type === 'bonus' ? '1000' : '+1up';
+        this.creationTime = Date.now();
+        this.duration = 5000;
+        this.opacity = 1;
+        this.fadeSpeed = 0.01;
     }
     update() {
+        if (Date.now() - this.creationTime > this.duration && this.opacity > 0) {
+            this.opacity -= this.fadeSpeed;
+            if (this.opacity <= 0.05) {
+                this.opacity = 0;
+            }
+        }
         this.radians += this.rotationSpeed;
         this.pos.x += this.vel.x;
         this.pos.y += this.vel.y;
@@ -464,6 +472,7 @@ class PowerUp {
         }
     }
     draw() {
+        this.ctx.globalAlpha = this.opacity;
         this.ctx.translate(this.pos.x, this.pos.y);
         this.ctx.rotate(this.radians);
         this.ctx.fillStyle = this.color;
@@ -476,6 +485,7 @@ class PowerUp {
         this.ctx.closePath();
         this.ctx.rotate(-this.radians);
         this.ctx.translate(-this.pos.x, -this.pos.y);
+        this.ctx.globalAlpha = 1;
     }
 }
 
@@ -485,6 +495,33 @@ function saveScore(storeName, score) {
 function getScore(storeName) {
     const score = localStorage.getItem(storeName);
     return score ? JSON.parse(score) : [null, null, null];
+}
+
+class Star {
+    canvas;
+    ctx;
+    color;
+    pos;
+    size;
+    constructor(canvas, ctx, color) {
+        this.canvas = canvas;
+        this.ctx = ctx;
+        this.color = color;
+        this.pos = {
+            x: Math.random() * this.canvas.width,
+            y: Math.random() * this.canvas.height,
+        };
+        this.size = randomIntFromInterval(1, 2);
+    }
+    draw() {
+        this.ctx.globalAlpha = .5;
+        this.ctx.beginPath();
+        this.ctx.arc(this.pos.x, this.pos.y, this.size, 0, 2 * Math.PI);
+        this.ctx.fillStyle = this.color;
+        this.ctx.fill();
+        this.ctx.closePath();
+        this.ctx.globalAlpha = 1;
+    }
 }
 
 // Get page elements
@@ -513,12 +550,13 @@ const COLORS = {
     BULLET: 'hsl(291, 80%, 50%)',
     POINTS: 'hsl(291, 60%, 75%)',
     POWER_UP: 'hsl(187, 71%, 50%)',
+    STAR: 'hsl(55, 100%, 95%)',
     ROIDS: [
-        'hsl(53, 100%, 73%)',
-        'hsl(45, 100%, 51%)',
-        'hsl(14, 100%, 56%)',
-        'hsl(1, 77%, 55%)',
-        'hsl(0, 73%, 41%)',
+        'hsl(47, 100%, 75%)',
+        'hsl(40, 100%, 51%)',
+        'hsl(14, 80%, 52%)',
+        'hsl(1, 71%, 48%)',
+        'hsl(0, 73%, 32%)',
     ]
 };
 // Gameplay variables
@@ -529,19 +567,22 @@ const KEYS = {
     SPACE: false,
 };
 // Game variables
-const LEVEL_START_SCREEN_DURATION = 3000;
-const STARTING_LIVES = 1;
+const LEVEL_START_SCREEN_DURATION = 2000;
+const STARTING_LIVES = 3;
 const STARTING_LEVEL = 1;
 const STARTING_SCORE = 0;
-let GAME_STATE = GameState.START;
-const ADD_POWERUP_THRESHOLD = 0.1;
+const ADD_POWERUP_THRESHOLD = 1;
 const STORE_NAME = 'AsteroidsScore';
 const AMOUNT_OF_HIGHSCORES = 3;
+const BULLETS_MAX = 10;
+const NUM_OF_STARS = 20;
+let GAME_STATE = GameState.START;
 let player;
 let infos;
 let bullets = [];
 let roids = [];
 let hitPoints = [];
+let stars;
 let currentLevel;
 let powerUp = null;
 let level = 1;
@@ -553,7 +594,9 @@ function handleKeydown(event) {
             x: player.pos.x + 4 / 3 * player.radius * Math.cos(player.direction),
             y: player.pos.y - 4 / 3 * player.radius * Math.sin(player.direction)
         };
-        bullets.push(new Bullet(ctx, bulletPos, player.direction, level, COLORS.BULLET));
+        if (bullets.length < BULLETS_MAX) {
+            bullets.push(new Bullet(ctx, bulletPos, player.direction, level, COLORS.BULLET));
+        }
     }
     if (GAME_STATE === GameState.START && event.code === 'Space') {
         setGameState(GameState.GAME);
@@ -624,10 +667,14 @@ function initLevel() {
         roids = [];
         bullets = [];
         hitPoints = [];
+        stars = [];
         player = new Player(canvas, ctx, { x: canvas.width / 2, y: canvas.height / 2 }, COLORS.SHIP);
         currentLevel = LEVELS[level - 1];
         for (let i = 0; i < currentLevel.numberOfRoids; i++) {
             roids.push(new Roid(canvas, ctx, null, currentLevel.maxRoidGrade, currentLevel.maxRoidSpeed, COLORS.ROIDS, null));
+        }
+        for (let i = 0; i < NUM_OF_STARS; i++) {
+            stars.push(new Star(canvas, ctx, COLORS.STAR));
         }
         requestAnimationFrame(gameloop);
     }, LEVEL_START_SCREEN_DURATION);
@@ -649,6 +696,7 @@ function gameloop(time) {
         }
         updatePoints();
         powerUp && updatePowerUp();
+        powerUp && checkPowerUpFade();
         accumulatedFrameTime -= FRAME_DURATION;
     }
     // HERE RENDER GAME ELEMENTS
@@ -668,6 +716,9 @@ function renderGame() {
     }
     for (const hitPoint of hitPoints) {
         hitPoint.draw();
+    }
+    for (const star of stars) {
+        star.draw();
     }
     powerUp && powerUp.draw();
 }
@@ -744,6 +795,11 @@ function updatePowerUp() {
         }
     }
     powerUp && powerUp.update();
+}
+function checkPowerUpFade() {
+    if (powerUp?.opacity === 0) {
+        powerUp = null;
+    }
 }
 function checkPlayerRoidsCollisions() {
     if (player.isInvencible)

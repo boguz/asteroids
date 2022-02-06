@@ -9,6 +9,7 @@ import { areTwoElementsColliding } from './utils/collisionDetection.js';
 import { HitPoint } from './classes/HitPoint.js';
 import { PowerUp } from './classes/PowerUp.js';
 import { getScore, saveScore } from './utils/localStorage.js';
+import { Star } from './classes/Star.js';
 
 // Get page elements
 const canvas = document.querySelector('#canvas') as HTMLCanvasElement;
@@ -38,12 +39,13 @@ const COLORS = {
 	BULLET: 'hsl(291, 80%, 50%)',
 	POINTS: 'hsl(291, 60%, 75%)',
 	POWER_UP: 'hsl(187, 71%, 50%)',
+	STAR: 'hsl(55, 100%, 95%)',
 	ROIDS: [
-		'hsl(53, 100%, 73%)',
-		'hsl(45, 100%, 51%)',
-		'hsl(14, 100%, 56%)',
-		'hsl(1, 77%, 55%)',
-		'hsl(0, 73%, 41%)',
+		'hsl(47, 100%, 75%)',
+		'hsl(40, 100%, 51%)',
+		'hsl(14, 80%, 52%)',
+		'hsl(1, 71%, 48%)',
+		'hsl(0, 73%, 32%)',
 	]
 };
 
@@ -56,20 +58,23 @@ const KEYS: KeysInterface = {
 };
 
 // Game variables
-const LEVEL_START_SCREEN_DURATION = 3000;
-const STARTING_LIVES = 1;
+const LEVEL_START_SCREEN_DURATION = 2000;
+const STARTING_LIVES = 3;
 const STARTING_LEVEL = 1;
 const STARTING_SCORE = 0;
-let GAME_STATE: GameState = GameState.START;
-const ADD_POWERUP_THRESHOLD = 0.1;
+const ADD_POWERUP_THRESHOLD = 1;
 const STORE_NAME = 'AsteroidsScore';
 const AMOUNT_OF_HIGHSCORES = 3;
+const BULLETS_MAX = 10;
+const NUM_OF_STARS = 20;
+let GAME_STATE: GameState = GameState.START;
 
 let player: Player;
 let infos: Infos;
 let bullets: Bullet[] = [];
 let roids: Roid[] = [];
 let hitPoints: HitPoint[] = [];
+let stars: Star[];
 let currentLevel: LevelInterface;
 let powerUp: PowerUp | null = null;
 
@@ -83,7 +88,9 @@ function handleKeydown(event: KeyboardEvent) {
 			x: player.pos.x + 4 / 3 * player.radius * Math.cos(player.direction),
 			y: player.pos.y - 4 / 3 * player.radius * Math.sin(player.direction)
 		};
-		bullets.push(new Bullet(ctx, bulletPos, player.direction, level, COLORS.BULLET));
+		if (bullets.length < BULLETS_MAX) {
+			bullets.push(new Bullet(ctx, bulletPos, player.direction, level, COLORS.BULLET));
+		}
 	}
 	
 	if (GAME_STATE === GameState.START && event.code === 'Space') {
@@ -160,11 +167,15 @@ function initLevel() {
 		roids = [];
 		bullets = [];
 		hitPoints = [];
+		stars = [];
 		player = new Player(canvas, ctx, { x: canvas.width / 2, y: canvas.height / 2 }, COLORS.SHIP);
 		
 		currentLevel = LEVELS[level - 1];
 		for (let i = 0; i < currentLevel.numberOfRoids; i++) {
 			roids.push(new Roid(canvas, ctx, null, currentLevel.maxRoidGrade, currentLevel.maxRoidSpeed, COLORS.ROIDS, null));
+		}
+		for (let i = 0; i < NUM_OF_STARS; i++) {
+			stars.push(new Star(canvas, ctx, COLORS.STAR));
 		}
 		requestAnimationFrame(gameloop);
 		
@@ -190,6 +201,7 @@ function gameloop(time: number) {
 		}
 		updatePoints();
 		powerUp && updatePowerUp();
+		powerUp && checkPowerUpFade();
 		
 		accumulatedFrameTime -= FRAME_DURATION;
 	}
@@ -212,6 +224,9 @@ function renderGame() {
 	}
 	for (const hitPoint of hitPoints) {
 		hitPoint.draw();
+	}
+	for (const star of stars) {
+		star.draw();
 	}
 	powerUp && powerUp.draw();
 }
@@ -309,6 +324,12 @@ function updatePowerUp() {
 	}
 	
 	powerUp && powerUp.update();
+}
+
+function checkPowerUpFade() {
+	if (powerUp?.opacity === 0) {
+		powerUp = null;
+	}
 }
 
 function checkPlayerRoidsCollisions() {
