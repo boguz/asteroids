@@ -1,5 +1,9 @@
 import { PositionInterface } from '../types/types.js';
 
+/**
+ * Power up with bonus points or extra live.
+ * Displayed as a slowly rotating pentagon that disappears after 5 seconds
+ */
 export class PowerUp {
 	private canvas: HTMLCanvasElement;
 	private ctx: CanvasRenderingContext2D;
@@ -7,18 +11,18 @@ export class PowerUp {
 	public size: number;
 	private direction: number;
 	private vel: { x: number, y: number };
-	private speed: number;
-	private color: string;
-	private sidesCount: number;
-	private rotation: number;
-	private rotationSpeed: number;
+	private readonly speed: number;
+	private readonly color: string;
+	private readonly sidesCount: number;
+	private readonly rotation: number;
+	private readonly rotationSpeed: number;
 	private radians: number;
 	public type: string;
 	public bonusPoints: string;
-	private creationTime: number;
-	private duration: number;
+	private readonly creationTime: number;
+	private readonly duration: number;
 	public opacity: number;
-	private fadeSpeed: number;
+	private readonly fadeSpeed: number;
 	
 	private possibleTypes = ['bonus', 'bonus', 'bonus', 'bonus', 'bonus', 'bonus', 'bonus', 'bonus', 'bonus', 'live'];
 	
@@ -49,38 +53,14 @@ export class PowerUp {
 		this.type = this.possibleTypes[Math.floor(Math.random() * this.possibleTypes.length)];
 		this.bonusPoints = this.type === 'bonus' ? '1000' : '+1up';
 		this.creationTime = Date.now();
-		this.duration = 5000;
+		this.duration = 8000;
 		this.opacity = 1;
 		this.fadeSpeed = 0.01;
 	}
 	
-	update() {
-		if (Date.now() - this.creationTime > this.duration && this.opacity > 0) {
-			this.opacity -= this.fadeSpeed;
-			
-			if (this.opacity <= 0.05) {
-				this.opacity = 0;
-			}
-		}
-		
-		
-		this.radians += this.rotationSpeed;
-		this.pos.x += this.vel.x;
-		this.pos.y += this.vel.y;
-		
-		if (this.pos.x < 0) {
-			this.pos.x = this.canvas.width;
-		} else if (this.pos.x > this.canvas.width) {
-			this.pos.x = 0;
-		}
-		
-		if (this.pos.y < 0) {
-			this.pos.y = this.canvas.height;
-		} else if (this.pos.y > this.canvas.height) {
-			this.pos.y = 0;
-		}
-	}
-	
+	/**
+	 * Draw power up pentagon on the canvas
+	 */
 	draw() {
 		this.ctx.globalAlpha = this.opacity;
 		this.ctx.translate(this.pos.x, this.pos.y);
@@ -103,5 +83,34 @@ export class PowerUp {
 		this.ctx.rotate(-this.radians);
 		this.ctx.translate(-this.pos.x, -this.pos.y);
 		this.ctx.globalAlpha = 1;
+	}
+	
+	/**
+	 * Update power up's opacity, rotation and position
+	 */
+	update() {
+		if (Date.now() - this.creationTime > this.duration && this.opacity > 0) {
+			this.opacity -= this.fadeSpeed;
+			
+			if (this.opacity <= 0.05) {
+				this.opacity = 0;
+			}
+		}
+		
+		this.radians += this.rotationSpeed;
+		this.pos.x += this.vel.x;
+		this.pos.y += this.vel.y;
+		
+		if (this.pos.x < 0) {
+			this.pos.x = this.canvas.width;
+		} else if (this.pos.x > this.canvas.width) {
+			this.pos.x = 0;
+		}
+		
+		if (this.pos.y < 0) {
+			this.pos.y = this.canvas.height;
+		} else if (this.pos.y > this.canvas.height) {
+			this.pos.y = 0;
+		}
 	}
 }

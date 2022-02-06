@@ -1,6 +1,9 @@
 import { PositionInterface } from '../types/types.js';
 import { randomIntFromInterval } from '../utils/utils.js';
 
+/**
+ * Asteroid element (show as a circle)
+ */
 export class Roid {
 	private canvas: HTMLCanvasElement;
 	private ctx: CanvasRenderingContext2D;
@@ -9,8 +12,8 @@ export class Roid {
 	public size: number;
 	private direction: number;
 	private vel: { x: number, y: number };
-	private speed: number;
-	private color: string;
+	private readonly speed: number;
+	private readonly color: string;
 	public points: number;
 	
 	private sizes = [20, 30, 40, 50, 60];
@@ -23,8 +26,8 @@ export class Roid {
 		maxRoidGrade: number,
 		maxRoidSpeed: number,
 		possibleColors: string[],
-		startPos: PositionInterface | null)
-	{
+		startPos: PositionInterface | null
+	) {
 		this.canvas = canvas;
 		this.ctx = ctx;
 		this.pos = startPos
@@ -45,6 +48,20 @@ export class Roid {
 		this.points = this.possiblePoints[this.grade - 1];
 	}
 	
+	/**
+	 * Draw asteroid on the canvas
+	 */
+	draw() {
+		this.ctx.beginPath();
+		this.ctx.arc(this.pos.x, this.pos.y, this.size, 0, 2 * Math.PI);
+		this.ctx.fillStyle = this.color;
+		this.ctx.fill();
+		this.ctx.closePath();
+	}
+	
+	/**
+	 * Update asteroid's position
+	 */
 	update() {
 		this.pos.x += this.vel.x;
 		this.pos.y += this.vel.y;
@@ -60,13 +77,5 @@ export class Roid {
 		} else if (this.pos.y > this.canvas.height) {
 			this.pos.y = 0;
 		}
-	}
-	
-	draw() {
-		this.ctx.beginPath();
-		this.ctx.arc(this.pos.x, this.pos.y, this.size, 0, 2 * Math.PI);
-		this.ctx.fillStyle = this.color;
-		this.ctx.fill();
-		this.ctx.closePath();
 	}
 }

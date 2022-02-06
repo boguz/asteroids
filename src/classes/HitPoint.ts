@@ -1,13 +1,16 @@
 import { PositionInterface } from '../types/types.js';
 
+/**
+ * Info shown when a roid or power up is hit by a bullet
+ */
 export class HitPoint {
 	private ctx: CanvasRenderingContext2D;
 	private pos: PositionInterface;
-	private points: number | string;
+	private readonly points: number | string;
 	private ANIMATION_DURATION: number;
 	private startTime: number;
 	public opacity: number;
-	private color: string;
+	private readonly color: string;
 	
 	constructor(
 		ctx: CanvasRenderingContext2D,
@@ -24,14 +27,9 @@ export class HitPoint {
 		this.color = color;
 	}
 	
-	update() {
-		this.pos.y -= 1.5;
-		this.opacity -= .025;
-		if (this.opacity <= 0.1) {
-			this.opacity = 0;
-		}
-	}
-	
+	/**
+	 * Draw the hit information on the canvas
+	 */
 	draw() {
 		this.ctx.globalAlpha = this.opacity;
 		this.ctx.fillStyle = this.color;
@@ -39,5 +37,16 @@ export class HitPoint {
 		this.ctx.textAlign = 'center';
 		this.ctx.fillText(`${this.points}`,this.pos.x,this.pos.y);
 		this.ctx.globalAlpha = 1;
+	}
+	
+	/**
+	 * Update the hit information's position and opacity
+	 */
+	update() {
+		this.pos.y -= 1.5;
+		this.opacity -= .025;
+		if (this.opacity <= 0.1) {
+			this.opacity = 0;
+		}
 	}
 }

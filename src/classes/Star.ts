@@ -1,12 +1,15 @@
 import { PositionInterface } from '../types/types';
 import { randomIntFromInterval } from '../utils/utils';
 
+/**
+ * Background star element
+ */
 export class Star {
-	canvas: HTMLCanvasElement;
-	ctx: CanvasRenderingContext2D;
-	color: string;
-	pos: PositionInterface;
-	size: number;
+	private canvas: HTMLCanvasElement;
+	private ctx: CanvasRenderingContext2D;
+	private readonly color: string;
+	private pos: PositionInterface;
+	private readonly size: number;
 	
 	constructor(
 		canvas: HTMLCanvasElement,
@@ -23,6 +26,9 @@ export class Star {
 		this.size = randomIntFromInterval(1, 2);
 	}
 	
+	/**
+	 * Draw a star on the canvas
+	 */
 	draw() {
 		this.ctx.globalAlpha = .5;
 		this.ctx.beginPath();

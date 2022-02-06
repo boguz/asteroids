@@ -1,5 +1,8 @@
 import { LevelInterface } from './types/types.js';
 
+/**
+ * Game levels
+ */
 export const LEVELS: LevelInterface[] = [
 	{
 		level: 1,

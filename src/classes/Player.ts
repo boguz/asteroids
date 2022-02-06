@@ -1,5 +1,8 @@
 import { KeysInterface, PositionInterface } from '../types/types.js';
 
+/**
+ * Player / Ship
+ */
 export class Player {
 	private canvas: HTMLCanvasElement;
 	private ctx: CanvasRenderingContext2D;
@@ -9,26 +12,37 @@ export class Player {
 	private vel: { x: number; y: number };
 	private colors: { ship: string, thrusterInner: string, thrusterOuter: string };
 	public direction: number;
-	private rotationSpeed: number;
+	private readonly rotationSpeed: number;
 	private isThrusting: boolean;
-	private thrustSpeed: number;
-	private friction: number;
+	private readonly thrustSpeed: number;
+	private readonly friction: number;
 	private invincible: boolean;
 	private invincibleStart: number;
-	private invincibilityTime: number;
+	private readonly invincibilityTime: number;
 	private opacity: number;
-	private blinkTime: number;
+	private readonly blinkTime: number;
 	
+	/**
+	 * Make player invisible and set starting time
+	 */
 	public startInvincibility() {
 		this.invincible = true;
 		this.invincibleStart = Date.now();
 	}
 	
-	get isInvencible() {
+	/**
+	 * Get boolean telling the invisibility state
+	 */
+	get isInvincible() {
 		return this.invincible;
 	}
 	
-	constructor(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, initialPosition: PositionInterface, color: string) {
+	constructor(
+		canvas: HTMLCanvasElement,
+		ctx: CanvasRenderingContext2D,
+		initialPosition: PositionInterface,
+		color: string
+	) {
 		this.canvas = canvas;
 		this.ctx = ctx;
 		this.size = 30;
@@ -58,30 +72,43 @@ export class Player {
 		this.blinkTime = 500;
 	}
 	
+	/**
+	 * Draw player elements on the canvas
+	 */
 	draw() {
+		// Draw thruster only of thrusting
 		if (this.isThrusting) {
 			this.drawThruster();
 		}
+		
+		// Draw ship
 		this.drawShip();
 		
+		// Blink during invincibility
 		if (this.invincible) {
 			const delta = Date.now() - this.invincibleStart;
 			this.opacity = delta % this.blinkTime < (this.blinkTime / 2) ? 0.25 : 0.75;
 		}
 	}
 	
+	/**
+	 * Draw ship (triangle) on the canvas
+	 */
 	drawShip() {
 		this.ctx.beginPath();
 		this.ctx.globalAlpha = this.opacity;
-		this.ctx.moveTo( // nose of the ship
+		// nose of the ship
+		this.ctx.moveTo(
 			this.pos.x + 4 / 3 * this.radius * Math.cos(this.direction),
 			this.pos.y - 4 / 3 * this.radius * Math.sin(this.direction)
 		);
-		this.ctx.lineTo( // rear left
+		// rear left
+		this.ctx.lineTo(
 			this.pos.x - this.radius * (2 / 3 * Math.cos(this.direction) + Math.sin(this.direction)),
 			this.pos.y + this.radius * (2 / 3 * Math.sin(this.direction) - Math.cos(this.direction))
 		);
-		this.ctx.lineTo( // rear right
+		// rear right
+		this.ctx.lineTo(
 			this.pos.x - this.radius * (2 / 3 * Math.cos(this.direction) - Math.sin(this.direction)),
 			this.pos.y + this.radius * (2 / 3 * Math.sin(this.direction) + Math.cos(this.direction))
 		);
@@ -91,21 +118,27 @@ export class Player {
 		this.ctx.globalAlpha = 1;
 	}
 	
+	/**
+	 * Draw ship's thruster
+	 */
 	drawThruster() {
 		this.ctx.globalAlpha = this.opacity;
 		this.ctx.fillStyle = this.colors.thrusterInner;
 		this.ctx.strokeStyle = this.colors.thrusterOuter;
 		this.ctx.lineWidth = this.size / 15;
 		this.ctx.beginPath();
-		this.ctx.moveTo( // rear left
+		// rear left
+		this.ctx.moveTo(
 			this.pos.x - this.radius * (2 / 3 * Math.cos(this.direction) + 0.5 * Math.sin(this.direction)),
 			this.pos.y + this.radius * (2 / 3 * Math.sin(this.direction) - 0.5 * Math.cos(this.direction))
 		);
-		this.ctx.lineTo( // rear centre (behind the ship)
+		// rear centre (behind the ship)
+		this.ctx.lineTo(
 			this.pos.x - this.radius * 5 / 3 * Math.cos(this.direction),
 			this.pos.y + this.radius * 5 / 3 * Math.sin(this.direction)
 		);
-		this.ctx.lineTo( // rear right
+		// rear right
+		this.ctx.lineTo(
 			this.pos.x - this.radius * (2 / 3 * Math.cos(this.direction) - 0.5 * Math.sin(this.direction)),
 			this.pos.y + this.radius * (2 / 3 * Math.sin(this.direction) + 0.5 * Math.cos(this.direction))
 		);
@@ -115,6 +148,12 @@ export class Player {
 		this.ctx.globalAlpha = 1;
 	}
 	
+	/**
+	 * Update ship position, rotation, speed and invincibility state
+	 * Listen to pressed keys to update corresponding values
+	 *
+	 * @param KEYS
+	 */
 	update(KEYS: KeysInterface) {
 		if (KEYS.RIGHT) {
 			this.direction -= this.rotationSpeed;
@@ -157,6 +196,7 @@ export class Player {
 			this.pos.y = 0;
 		}
 		
+		// Check invincibility state
 		const timeNow = Date.now();
 		if (timeNow - this.invincibleStart > this.invincibilityTime) {
 			this.invincible = false;

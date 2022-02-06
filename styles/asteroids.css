@@ -22,6 +22,14 @@
     height: 100vh;
 }
 
+.canvas {
+    border: var(--canvas-player-hit-border-thickness) solid var(--color-bg);
+}
+
+.start__info + .start__info {
+    margin-top: 1rem;
+}
+
 .canvas--player-hit {
     animation: canvasBorderAnimation var(--canvas-player-hit-duration) linear;
 }
@@ -50,7 +58,7 @@
 
 .start__title,
 .end__title {
-    margin-bottom: 2rem;
+    margin-bottom: 4rem;
 }
 
 .infos {

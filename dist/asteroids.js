@@ -6,6 +6,9 @@ var GameState;
     GameState["WIN"] = "WIN";
 })(GameState || (GameState = {}));
 
+/**
+ * Player / Ship
+ */
 class Player {
     canvas;
     ctx;
@@ -24,11 +27,17 @@ class Player {
     invincibilityTime;
     opacity;
     blinkTime;
+    /**
+     * Make player invisible and set starting time
+     */
     startInvincibility() {
         this.invincible = true;
         this.invincibleStart = Date.now();
     }
-    get isInvencible() {
+    /**
+     * Get boolean telling the invisibility state
+     */
+    get isInvincible() {
         return this.invincible;
     }
     constructor(canvas, ctx, initialPosition, color) {
@@ -60,47 +69,65 @@ class Player {
         this.opacity = 1;
         this.blinkTime = 500;
     }
+    /**
+     * Draw player elements on the canvas
+     */
     draw() {
+        // Draw thruster only of thrusting
         if (this.isThrusting) {
             this.drawThruster();
         }
+        // Draw ship
         this.drawShip();
+        // Blink during invincibility
         if (this.invincible) {
             const delta = Date.now() - this.invincibleStart;
             this.opacity = delta % this.blinkTime < (this.blinkTime / 2) ? 0.25 : 0.75;
         }
     }
+    /**
+     * Draw ship (triangle) on the canvas
+     */
     drawShip() {
         this.ctx.beginPath();
         this.ctx.globalAlpha = this.opacity;
-        this.ctx.moveTo(// nose of the ship
-        this.pos.x + 4 / 3 * this.radius * Math.cos(this.direction), this.pos.y - 4 / 3 * this.radius * Math.sin(this.direction));
-        this.ctx.lineTo(// rear left
-        this.pos.x - this.radius * (2 / 3 * Math.cos(this.direction) + Math.sin(this.direction)), this.pos.y + this.radius * (2 / 3 * Math.sin(this.direction) - Math.cos(this.direction)));
-        this.ctx.lineTo(// rear right
-        this.pos.x - this.radius * (2 / 3 * Math.cos(this.direction) - Math.sin(this.direction)), this.pos.y + this.radius * (2 / 3 * Math.sin(this.direction) + Math.cos(this.direction)));
+        // nose of the ship
+        this.ctx.moveTo(this.pos.x + 4 / 3 * this.radius * Math.cos(this.direction), this.pos.y - 4 / 3 * this.radius * Math.sin(this.direction));
+        // rear left
+        this.ctx.lineTo(this.pos.x - this.radius * (2 / 3 * Math.cos(this.direction) + Math.sin(this.direction)), this.pos.y + this.radius * (2 / 3 * Math.sin(this.direction) - Math.cos(this.direction)));
+        // rear right
+        this.ctx.lineTo(this.pos.x - this.radius * (2 / 3 * Math.cos(this.direction) - Math.sin(this.direction)), this.pos.y + this.radius * (2 / 3 * Math.sin(this.direction) + Math.cos(this.direction)));
         this.ctx.closePath();
         this.ctx.fillStyle = this.colors.ship;
         this.ctx.fill();
         this.ctx.globalAlpha = 1;
     }
+    /**
+     * Draw ship's thruster
+     */
     drawThruster() {
         this.ctx.globalAlpha = this.opacity;
         this.ctx.fillStyle = this.colors.thrusterInner;
         this.ctx.strokeStyle = this.colors.thrusterOuter;
         this.ctx.lineWidth = this.size / 15;
         this.ctx.beginPath();
-        this.ctx.moveTo(// rear left
-        this.pos.x - this.radius * (2 / 3 * Math.cos(this.direction) + 0.5 * Math.sin(this.direction)), this.pos.y + this.radius * (2 / 3 * Math.sin(this.direction) - 0.5 * Math.cos(this.direction)));
-        this.ctx.lineTo(// rear centre (behind the ship)
-        this.pos.x - this.radius * 5 / 3 * Math.cos(this.direction), this.pos.y + this.radius * 5 / 3 * Math.sin(this.direction));
-        this.ctx.lineTo(// rear right
-        this.pos.x - this.radius * (2 / 3 * Math.cos(this.direction) - 0.5 * Math.sin(this.direction)), this.pos.y + this.radius * (2 / 3 * Math.sin(this.direction) + 0.5 * Math.cos(this.direction)));
+        // rear left
+        this.ctx.moveTo(this.pos.x - this.radius * (2 / 3 * Math.cos(this.direction) + 0.5 * Math.sin(this.direction)), this.pos.y + this.radius * (2 / 3 * Math.sin(this.direction) - 0.5 * Math.cos(this.direction)));
+        // rear centre (behind the ship)
+        this.ctx.lineTo(this.pos.x - this.radius * 5 / 3 * Math.cos(this.direction), this.pos.y + this.radius * 5 / 3 * Math.sin(this.direction));
+        // rear right
+        this.ctx.lineTo(this.pos.x - this.radius * (2 / 3 * Math.cos(this.direction) - 0.5 * Math.sin(this.direction)), this.pos.y + this.radius * (2 / 3 * Math.sin(this.direction) + 0.5 * Math.cos(this.direction)));
         this.ctx.closePath();
         this.ctx.fill();
         this.ctx.stroke();
         this.ctx.globalAlpha = 1;
     }
+    /**
+     * Update ship position, rotation, speed and invincibility state
+     * Listen to pressed keys to update corresponding values
+     *
+     * @param KEYS
+     */
     update(KEYS) {
         if (KEYS.RIGHT) {
             this.direction -= this.rotationSpeed;
@@ -143,6 +170,7 @@ class Player {
         else if (this.pos.y > this.canvas.height) {
             this.pos.y = 0;
         }
+        // Check invincibility state
         const timeNow = Date.now();
         if (timeNow - this.invincibleStart > this.invincibilityTime) {
             this.invincible = false;
@@ -151,14 +179,27 @@ class Player {
     }
 }
 
-function utils(variableName) {
+/**
+ * Get value of a CSS Variable
+ *
+ * @param variableName
+ */
+function getCSSVariableValue(variableName) {
     return getComputedStyle(document.documentElement).getPropertyValue(variableName);
 }
-// min and max included
+/**
+ * Return a random number from a given interval, max and min included
+ *
+ * @param min
+ * @param max
+ */
 function randomIntFromInterval(min, max) {
     return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
+/**
+ * Bullet fired by the ship
+ */
 class Bullet {
     ctx;
     pos;
@@ -179,6 +220,9 @@ class Bullet {
             y: 5,
         };
     }
+    /**
+     * Draw a button on the canvas
+     */
     draw() {
         this.ctx.beginPath();
         this.ctx.arc(this.pos.x, this.pos.y, this.size, 0, 2 * Math.PI);
@@ -186,12 +230,19 @@ class Bullet {
         this.ctx.fill();
         this.ctx.closePath();
     }
+    /**
+     * Update bullet's position
+     */
     update() {
         this.pos.x += this.vel.x * Math.cos(this.direction);
         this.pos.y -= this.vel.y * Math.sin(this.direction);
     }
 }
 
+/**
+ * Show game information on the top of the screen
+ *  - Level, lives and score
+ */
 class Infos {
     levelEl;
     livesEl;
@@ -203,6 +254,13 @@ class Infos {
         this.scoreEl = document.querySelector('.infos_score');
         this.levelsAmount = levelsAmount;
     }
+    /**
+     * Update the content of the information elements on the canvas
+     *
+     * @param level
+     * @param lives
+     * @param score
+     */
     update(level, lives, score) {
         this.levelEl.textContent = `Level:${level}/${this.levelsAmount}`;
         this.livesEl.textContent = `Lives:${lives}`;
@@ -210,6 +268,9 @@ class Infos {
     }
 }
 
+/**
+ * Asteroid element (show as a circle)
+ */
 class Roid {
     canvas;
     ctx;
@@ -243,6 +304,19 @@ class Roid {
         this.color = possibleColors[this.grade - 1];
         this.points = this.possiblePoints[this.grade - 1];
     }
+    /**
+     * Draw asteroid on the canvas
+     */
+    draw() {
+        this.ctx.beginPath();
+        this.ctx.arc(this.pos.x, this.pos.y, this.size, 0, 2 * Math.PI);
+        this.ctx.fillStyle = this.color;
+        this.ctx.fill();
+        this.ctx.closePath();
+    }
+    /**
+     * Update asteroid's position
+     */
     update() {
         this.pos.x += this.vel.x;
         this.pos.y += this.vel.y;
@@ -259,15 +333,11 @@ class Roid {
             this.pos.y = 0;
         }
     }
-    draw() {
-        this.ctx.beginPath();
-        this.ctx.arc(this.pos.x, this.pos.y, this.size, 0, 2 * Math.PI);
-        this.ctx.fillStyle = this.color;
-        this.ctx.fill();
-        this.ctx.closePath();
-    }
 }
 
+/**
+ * Game levels
+ */
 const LEVELS = [
     {
         level: 1,
@@ -361,6 +431,12 @@ const LEVELS = [
     }
 ];
 
+/**
+ * Detect collision between two elements.
+ *
+ * @param elOne
+ * @param elTwo
+ */
 function areTwoElementsColliding(elOne, elTwo) {
     const sideA = elOne.pos.x - elTwo.pos.x;
     const sideB = elOne.pos.y - elTwo.pos.y;
@@ -368,6 +444,9 @@ function areTwoElementsColliding(elOne, elTwo) {
     return distance <= (elOne.size + elTwo.size);
 }
 
+/**
+ * Info shown when a roid or power up is hit by a bullet
+ */
 class HitPoint {
     ctx;
     pos;
@@ -385,13 +464,9 @@ class HitPoint {
         this.opacity = 1;
         this.color = color;
     }
-    update() {
-        this.pos.y -= 1.5;
-        this.opacity -= .025;
-        if (this.opacity <= 0.1) {
-            this.opacity = 0;
-        }
-    }
+    /**
+     * Draw the hit information on the canvas
+     */
     draw() {
         this.ctx.globalAlpha = this.opacity;
         this.ctx.fillStyle = this.color;
@@ -400,8 +475,22 @@ class HitPoint {
         this.ctx.fillText(`${this.points}`, this.pos.x, this.pos.y);
         this.ctx.globalAlpha = 1;
     }
+    /**
+     * Update the hit information's position and opacity
+     */
+    update() {
+        this.pos.y -= 1.5;
+        this.opacity -= .025;
+        if (this.opacity <= 0.1) {
+            this.opacity = 0;
+        }
+    }
 }
 
+/**
+ * Power up with bonus points or extra live.
+ * Displayed as a slowly rotating pentagon that disappears after 5 seconds
+ */
 class PowerUp {
     canvas;
     ctx;
@@ -444,10 +533,32 @@ class PowerUp {
         this.type = this.possibleTypes[Math.floor(Math.random() * this.possibleTypes.length)];
         this.bonusPoints = this.type === 'bonus' ? '1000' : '+1up';
         this.creationTime = Date.now();
-        this.duration = 5000;
+        this.duration = 8000;
         this.opacity = 1;
         this.fadeSpeed = 0.01;
     }
+    /**
+     * Draw power up pentagon on the canvas
+     */
+    draw() {
+        this.ctx.globalAlpha = this.opacity;
+        this.ctx.translate(this.pos.x, this.pos.y);
+        this.ctx.rotate(this.radians);
+        this.ctx.fillStyle = this.color;
+        this.ctx.beginPath();
+        this.ctx.moveTo(this.size / 2 * Math.cos(0), this.size / 2 * Math.sin(0));
+        for (let i = 0; i < this.sidesCount; i++) {
+            this.ctx.lineTo(this.size / 2 * Math.cos(i * 2 * Math.PI / this.sidesCount), this.size / 2 * Math.sin(i * 2 * Math.PI / this.sidesCount));
+        }
+        this.ctx.fill();
+        this.ctx.closePath();
+        this.ctx.rotate(-this.radians);
+        this.ctx.translate(-this.pos.x, -this.pos.y);
+        this.ctx.globalAlpha = 1;
+    }
+    /**
+     * Update power up's opacity, rotation and position
+     */
     update() {
         if (Date.now() - this.creationTime > this.duration && this.opacity > 0) {
             this.opacity -= this.fadeSpeed;
@@ -471,32 +582,30 @@ class PowerUp {
             this.pos.y = 0;
         }
     }
-    draw() {
-        this.ctx.globalAlpha = this.opacity;
-        this.ctx.translate(this.pos.x, this.pos.y);
-        this.ctx.rotate(this.radians);
-        this.ctx.fillStyle = this.color;
-        this.ctx.beginPath();
-        this.ctx.moveTo(this.size / 2 * Math.cos(0), this.size / 2 * Math.sin(0));
-        for (let i = 0; i < this.sidesCount; i++) {
-            this.ctx.lineTo(this.size / 2 * Math.cos(i * 2 * Math.PI / this.sidesCount), this.size / 2 * Math.sin(i * 2 * Math.PI / this.sidesCount));
-        }
-        this.ctx.fill();
-        this.ctx.closePath();
-        this.ctx.rotate(-this.radians);
-        this.ctx.translate(-this.pos.x, -this.pos.y);
-        this.ctx.globalAlpha = 1;
-    }
 }
 
+/**
+ * Save the current hi-scores to the local storage
+ *
+ * @param storeName
+ * @param score
+ */
 function saveScore(storeName, score) {
     localStorage.setItem(storeName, JSON.stringify(score));
 }
+/**
+ * Get the saved hi-scores from local storage
+ *
+ * @param storeName
+ */
 function getScore(storeName) {
     const score = localStorage.getItem(storeName);
     return score ? JSON.parse(score) : [null, null, null];
 }
 
+/**
+ * Background star element
+ */
 class Star {
     canvas;
     ctx;
@@ -513,6 +622,9 @@ class Star {
         };
         this.size = randomIntFromInterval(1, 2);
     }
+    /**
+     * Draw a star on the canvas
+     */
     draw() {
         this.ctx.globalAlpha = .5;
         this.ctx.beginPath();
@@ -544,8 +656,8 @@ let prevTime = performance.now();
 let accumulatedFrameTime = 0;
 // Colors and design
 const COLORS = {
-    BG: utils('--color-bg'),
-    WHITE: utils('--color-white'),
+    BG: getCSSVariableValue('--color-bg'),
+    WHITE: getCSSVariableValue('--color-white'),
     SHIP: 'hsl(20, 16%, 93%)',
     BULLET: 'hsl(291, 80%, 50%)',
     POINTS: 'hsl(291, 60%, 75%)',
@@ -560,7 +672,7 @@ const COLORS = {
     ]
 };
 // Gameplay variables
-const KEYS = {
+let KEYS = {
     LEFT: false,
     RIGHT: false,
     UP: false,
@@ -571,10 +683,10 @@ const LEVEL_START_SCREEN_DURATION = 2000;
 const STARTING_LIVES = 3;
 const STARTING_LEVEL = 1;
 const STARTING_SCORE = 0;
-const ADD_POWERUP_THRESHOLD = 1;
+const ADD_POWERUP_PROBABILITY = 0.05;
 const STORE_NAME = 'AsteroidsScore';
 const AMOUNT_OF_HIGHSCORES = 3;
-const BULLETS_MAX = 10;
+const BULLETS_MAX = 8;
 const NUM_OF_STARS = 20;
 let GAME_STATE = GameState.START;
 let player;
@@ -585,10 +697,17 @@ let hitPoints = [];
 let stars;
 let currentLevel;
 let powerUp = null;
+// Initial  game values
 let level = 1;
 let score = 0;
 let lives = STARTING_LIVES;
+/**
+ * Handle key down events correctly according to game state
+ *
+ * @param event
+ */
 function handleKeydown(event) {
+    // Shoot
     if (GAME_STATE === GameState.GAME && event.code === 'Space' && player) {
         const bulletPos = {
             x: player.pos.x + 4 / 3 * player.radius * Math.cos(player.direction),
@@ -598,14 +717,17 @@ function handleKeydown(event) {
             bullets.push(new Bullet(ctx, bulletPos, player.direction, level, COLORS.BULLET));
         }
     }
+    // Start game from Start Screen
     if (GAME_STATE === GameState.START && event.code === 'Space') {
         setGameState(GameState.GAME);
     }
+    // Restart game from End or Win screens
     if (GAME_STATE === GameState.GAME_OVER && event.code === 'Space' ||
         GAME_STATE === GameState.WIN && event.code === 'Space') {
         setGameState(GameState.GAME);
         initGame();
     }
+    // Set correct pressed key values
     if (GAME_STATE === GameState.GAME) {
         if (event.code === 'KeyA') {
             KEYS.LEFT = true;
@@ -618,6 +740,11 @@ function handleKeydown(event) {
         }
     }
 }
+/**
+ * Set key pressed values to false on key up event
+ *
+ * @param event
+ */
 function handleKeyup(event) {
     if (GAME_STATE === GameState.GAME) {
         if (event.code === 'KeyA') {
@@ -631,6 +758,14 @@ function handleKeyup(event) {
         }
     }
 }
+/**
+ * Change game state
+ *  - set correct GAME_STATE
+ *  - show / hide correct screen for current state
+ *  - handle new game and win / game over states
+ *
+ * @param newState
+ */
 function setGameState(newState) {
     GAME_STATE = newState;
     START_SCREEN.style.display = newState === GameState.START ? 'flex' : 'none';
@@ -645,6 +780,9 @@ function setGameState(newState) {
         updateSavedScore();
     }
 }
+/**
+ * Initialize app
+ */
 function init() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -652,6 +790,9 @@ function init() {
     window.addEventListener('keydown', handleKeydown);
     window.addEventListener('keyup', handleKeyup);
 }
+/**
+ * Initialize game
+ */
 function initGame() {
     infos = new Infos(LEVELS.length);
     score = STARTING_SCORE;
@@ -659,9 +800,22 @@ function initGame() {
     level = STARTING_LEVEL;
     initLevel();
 }
+/**
+ * Initialize level
+ *  - show correct info on level start screen
+ *  - pause for level screen
+ *  - reset game elements
+ *  - start game animation
+ */
 function initLevel() {
     LEVEL_START_TITLE.textContent = `LEVEL ${level}`;
     LEVEL_START_SCREEN.style.display = 'flex';
+    KEYS = {
+        LEFT: false,
+        RIGHT: false,
+        UP: false,
+        SPACE: false,
+    };
     setTimeout(() => {
         LEVEL_START_SCREEN.style.display = 'none';
         roids = [];
@@ -679,6 +833,13 @@ function initLevel() {
         requestAnimationFrame(gameloop);
     }, LEVEL_START_SCREEN_DURATION);
 }
+/**
+ * Game loop
+ *  - clear canvas
+ *  - update game elements
+ *  - render game elements
+ * @param time
+ */
 function gameloop(time) {
     ctx.fillStyle = COLORS.BG;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -686,7 +847,7 @@ function gameloop(time) {
     prevTime = time;
     accumulatedFrameTime += elapsedTimeBetweenFrames;
     while (accumulatedFrameTime >= FRAME_DURATION) {
-        // HERE UPDATE GAME ELEMENTS
+        // UPDATE GAME ELEMENTS
         player.update(KEYS);
         updateBullets();
         checkPlayerRoidsCollisions();
@@ -699,12 +860,15 @@ function gameloop(time) {
         powerUp && checkPowerUpFade();
         accumulatedFrameTime -= FRAME_DURATION;
     }
-    // HERE RENDER GAME ELEMENTS
+    // RENDER GAME ELEMENTS
     if (GAME_STATE === GameState.GAME && roids.length) {
         renderGame();
         requestAnimationFrame(gameloop);
     }
 }
+/**
+ * Render all game elements
+ */
 function renderGame() {
     infos.update(level, lives, score);
     player.draw();
@@ -743,6 +907,14 @@ function updateBullets() {
 }
 /**
  * Check if any roid was hit by a bullet
+ *  if so:
+ *      - remove roid
+ *      - remove bullet
+ *      - add new roids (if needed)
+ *      - show points
+ *      - add points to score
+ *      - add Power Up
+ *      - Check new level / win screen
  */
 function checkBulletsRoidsCollisions() {
     for (let i = bullets.length; i > 0; i--) {
@@ -774,12 +946,22 @@ function checkBulletsRoidsCollisions() {
         }
     }
 }
+/**
+ * Add power up
+ */
 function addPowerUp() {
-    const shouldAddPowerUp = Math.random() < ADD_POWERUP_THRESHOLD;
-    if (shouldAddPowerUp) {
+    if (Math.random() < ADD_POWERUP_PROBABILITY) {
         powerUp = new PowerUp(canvas, ctx, COLORS.POWER_UP);
     }
 }
+/**
+ * Update power up
+ *  - Check if hit by bullet
+ *      - remove power up
+ *      - remove bullet
+ *      - add power up points / live
+ *  - update power up position
+ */
 function updatePowerUp() {
     for (let i = bullets.length; i > 0; i--) {
         if (bullets[i - 1] && powerUp && areTwoElementsColliding(bullets[i - 1], powerUp)) {
@@ -796,13 +978,22 @@ function updatePowerUp() {
     }
     powerUp && powerUp.update();
 }
+/**
+ * Check if power up has faded
+ *  - remove power up
+ */
 function checkPowerUpFade() {
     if (powerUp?.opacity === 0) {
         powerUp = null;
     }
 }
+/**
+ * Check collision between player and roids
+ *  - remove live
+ *  - set game over (if no more lives)
+ */
 function checkPlayerRoidsCollisions() {
-    if (player.isInvencible)
+    if (player.isInvincible)
         return;
     for (let i = roids.length; i > 0; i--) {
         if (areTwoElementsColliding(player, roids[i - 1])) {
@@ -815,6 +1006,11 @@ function checkPlayerRoidsCollisions() {
         setGameState(GameState.GAME_OVER);
     }
 }
+/**
+ * Update points
+ *  - update position
+ *  - remove points that have faded out
+ */
 function updatePoints() {
     for (let i = hitPoints.length; i > 0; i--) {
         const hitPoint = hitPoints[i - 1];
@@ -826,6 +1022,9 @@ function updatePoints() {
         }
     }
 }
+/**
+ * Show canvas border when player is hit
+ */
 function showPlayerHitCanvasBorder() {
     canvas.classList.add('canvas--player-hit');
     canvas.addEventListener('animationend', (event) => {
@@ -834,9 +1033,14 @@ function showPlayerHitCanvasBorder() {
         }
     });
 }
+/**
+ * Update hi-scores
+ *  - If score is hi-score, prompt name and save to local storage
+ *  - Show hi-scores
+ */
 function updateSavedScore() {
     const hiScores = getScore(STORE_NAME);
-    if (GAME_STATE === GameState.WIN) {
+    if (GAME_STATE === GameState.WIN || GAME_STATE === GameState.GAME_OVER) {
         for (let i = 0; i < AMOUNT_OF_HIGHSCORES; i++) {
             if (hiScores[i] && hiScores[i].score >= score) {
                 continue;
@@ -845,10 +1049,12 @@ function updateSavedScore() {
                 let userName = window.prompt('Well done, you have one of the top 3 scores. What is your user name?');
                 if (!userName)
                     userName = 'n/a';
-                hiScores[i] = { name: userName.trim(), score: score };
+                //hiScores[i] = { name: userName.trim(), score: score };
+                hiScores.splice(i, 0, { name: userName.trim(), score: score });
                 break;
             }
         }
+        hiScores.length = AMOUNT_OF_HIGHSCORES;
         saveScore(STORE_NAME, hiScores);
     }
     for (let i = 0; i < AMOUNT_OF_HIGHSCORES; i++) {
@@ -857,5 +1063,6 @@ function updateSavedScore() {
         HISCORE_ELEMENTS[i].textContent = `${i + 1}. ${hiScoreName}: ${hiScoreScore}`;
     }
 }
+// Init app
 init();
 //# sourceMappingURL=asteroids.js.map

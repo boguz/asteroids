@@ -1,16 +1,24 @@
 import { PositionInterface } from '../types/types.js';
 
+/**
+ * Bullet fired by the ship
+ */
 export class Bullet {
 	private ctx: CanvasRenderingContext2D;
 	public pos: PositionInterface;
-	private direction: number;
+	private readonly direction: number;
 	private grade: number;
 	private color: string;
-	size: number;
+	public size: number;
 	private vel: { x: number; y: number };
 	
-	
-	constructor(ctx: CanvasRenderingContext2D, pos: PositionInterface, direction: number, grade: number, color: string) {
+	constructor(
+		ctx: CanvasRenderingContext2D,
+		pos: PositionInterface,
+		direction: number,
+		grade: number,
+		color: string
+	) {
 		this.ctx = ctx;
 		this.pos = pos;
 		this.direction = direction;
@@ -23,6 +31,9 @@ export class Bullet {
 		};
 	}
 	
+	/**
+	 * Draw a button on the canvas
+	 */
 	draw() {
 		this.ctx.beginPath();
 		this.ctx.arc(this.pos.x, this.pos.y, this.size, 0, 2 * Math.PI);
@@ -31,6 +42,9 @@ export class Bullet {
 		this.ctx.closePath();
 	}
 	
+	/**
+	 * Update bullet's position
+	 */
 	update() {
 		this.pos.x += this.vel.x * Math.cos(this.direction);
 		this.pos.y -= this.vel.y * Math.sin(this.direction);

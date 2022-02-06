@@ -1,6 +1,6 @@
 import { GameState, KeysInterface, LevelInterface } from './types/types';
 import { Player } from './classes/Player.js';
-import { utils } from './utils/utils.js';
+import { getCSSVariableValue } from './utils/utils.js';
 import { Bullet } from './classes/Bullet.js';
 import { Infos } from './classes/Infos.js';
 import { Roid } from './classes/Roid.js';
@@ -33,8 +33,8 @@ let accumulatedFrameTime = 0;
 
 // Colors and design
 const COLORS = {
-	BG: utils('--color-bg'),
-	WHITE: utils('--color-white'),
+	BG: getCSSVariableValue('--color-bg'),
+	WHITE: getCSSVariableValue('--color-white'),
 	SHIP: 'hsl(20, 16%, 93%)',
 	BULLET: 'hsl(291, 80%, 50%)',
 	POINTS: 'hsl(291, 60%, 75%)',
@@ -50,7 +50,7 @@ const COLORS = {
 };
 
 // Gameplay variables
-const KEYS: KeysInterface = {
+let KEYS: KeysInterface = {
 	LEFT: false,
 	RIGHT: false,
 	UP: false,
@@ -62,13 +62,13 @@ const LEVEL_START_SCREEN_DURATION = 2000;
 const STARTING_LIVES = 3;
 const STARTING_LEVEL = 1;
 const STARTING_SCORE = 0;
-const ADD_POWERUP_THRESHOLD = 1;
+const ADD_POWERUP_PROBABILITY = 0.05;
 const STORE_NAME = 'AsteroidsScore';
 const AMOUNT_OF_HIGHSCORES = 3;
-const BULLETS_MAX = 10;
+const BULLETS_MAX = 8;
 const NUM_OF_STARS = 20;
-let GAME_STATE: GameState = GameState.START;
 
+let GAME_STATE: GameState = GameState.START;
 let player: Player;
 let infos: Infos;
 let bullets: Bullet[] = [];
@@ -78,11 +78,18 @@ let stars: Star[];
 let currentLevel: LevelInterface;
 let powerUp: PowerUp | null = null;
 
+// Initial  game values
 let level = 1;
 let score = 0;
 let lives = STARTING_LIVES;
 
+/**
+ * Handle key down events correctly according to game state
+ *
+ * @param event
+ */
 function handleKeydown(event: KeyboardEvent) {
+	// Shoot
 	if (GAME_STATE === GameState.GAME && event.code === 'Space' && player) {
 		const bulletPos = {
 			x: player.pos.x + 4 / 3 * player.radius * Math.cos(player.direction),
@@ -93,16 +100,19 @@ function handleKeydown(event: KeyboardEvent) {
 		}
 	}
 	
+	// Start game from Start Screen
 	if (GAME_STATE === GameState.START && event.code === 'Space') {
 		setGameState(GameState.GAME);
 	}
 	
+	// Restart game from End or Win screens
 	if (GAME_STATE === GameState.GAME_OVER && event.code === 'Space' ||
 		GAME_STATE === GameState.WIN && event.code === 'Space') {
 		setGameState(GameState.GAME);
 		initGame();
 	}
 	
+	// Set correct pressed key values
 	if (GAME_STATE === GameState.GAME) {
 		if (event.code === 'KeyA') {
 			KEYS.LEFT = true;
@@ -114,6 +124,11 @@ function handleKeydown(event: KeyboardEvent) {
 	}
 }
 
+/**
+ * Set key pressed values to false on key up event
+ *
+ * @param event
+ */
 function handleKeyup(event: KeyboardEvent) {
 	if (GAME_STATE === GameState.GAME) {
 		if (event.code === 'KeyA') {
@@ -126,6 +141,14 @@ function handleKeyup(event: KeyboardEvent) {
 	}
 }
 
+/**
+ * Change game state
+ *  - set correct GAME_STATE
+ *  - show / hide correct screen for current state
+ *  - handle new game and win / game over states
+ *
+ * @param newState
+ */
 function setGameState(newState: GameState) {
 	GAME_STATE = newState;
 	START_SCREEN.style.display = newState === GameState.START ? 'flex' : 'none';
@@ -141,6 +164,9 @@ function setGameState(newState: GameState) {
 	}
 }
 
+/**
+ * Initialize app
+ */
 function init() {
 	canvas.width = window.innerWidth;
 	canvas.height = window.innerHeight;
@@ -150,6 +176,9 @@ function init() {
 	window.addEventListener('keyup', handleKeyup);
 }
 
+/**
+ * Initialize game
+ */
 function initGame() {
 	infos = new Infos(LEVELS.length);
 	score = STARTING_SCORE;
@@ -158,9 +187,22 @@ function initGame() {
 	initLevel();
 }
 
+/**
+ * Initialize level
+ *  - show correct info on level start screen
+ *  - pause for level screen
+ *  - reset game elements
+ *  - start game animation
+ */
 function initLevel() {
 	LEVEL_START_TITLE.textContent = `LEVEL ${level}`;
 	LEVEL_START_SCREEN.style.display = 'flex';
+	KEYS = {
+		LEFT: false,
+		RIGHT: false,
+		UP: false,
+		SPACE: false,
+	};
 	
 	setTimeout(() => {
 		LEVEL_START_SCREEN.style.display = 'none';
@@ -182,6 +224,13 @@ function initLevel() {
 	}, LEVEL_START_SCREEN_DURATION);
 }
 
+/**
+ * Game loop
+ *  - clear canvas
+ *  - update game elements
+ *  - render game elements
+ * @param time
+ */
 function gameloop(time: number) {
 	ctx.fillStyle = COLORS.BG;
 	ctx.fillRect(0,0,canvas.width, canvas.height);
@@ -190,7 +239,7 @@ function gameloop(time: number) {
 	prevTime = time;
 	accumulatedFrameTime += elapsedTimeBetweenFrames;
 	while (accumulatedFrameTime >= FRAME_DURATION) {
-		// HERE UPDATE GAME ELEMENTS
+		// UPDATE GAME ELEMENTS
 		player.update(KEYS);
 		
 		updateBullets();
@@ -206,13 +255,16 @@ function gameloop(time: number) {
 		accumulatedFrameTime -= FRAME_DURATION;
 	}
 	
-	// HERE RENDER GAME ELEMENTS
+	// RENDER GAME ELEMENTS
 	if (GAME_STATE === GameState.GAME && roids.length) {
 		renderGame();
 		requestAnimationFrame(gameloop);
 	}
 }
 
+/**
+ * Render all game elements
+ */
 function renderGame() {
 	infos.update(level, lives, score);
 	player.draw();
@@ -252,6 +304,14 @@ function updateBullets() {
 
 /**
  * Check if any roid was hit by a bullet
+ *  if so:
+ *      - remove roid
+ *      - remove bullet
+ *      - add new roids (if needed)
+ *      - show points
+ *      - add points to score
+ *      - add Power Up
+ *      - Check new level / win screen
  */
 function checkBulletsRoidsCollisions(): void {
 	for (let i = bullets.length; i > 0; i--) {
@@ -302,13 +362,23 @@ function checkBulletsRoidsCollisions(): void {
 	}
 }
 
+/**
+ * Add power up
+ */
 function addPowerUp() {
-	const shouldAddPowerUp = Math.random() < ADD_POWERUP_THRESHOLD;
-	if (shouldAddPowerUp) {
+	if (Math.random() < ADD_POWERUP_PROBABILITY) {
 		powerUp = new PowerUp(canvas, ctx, COLORS.POWER_UP);
 	}
 }
 
+/**
+ * Update power up
+ *  - Check if hit by bullet
+ *      - remove power up
+ *      - remove bullet
+ *      - add power up points / live
+ *  - update power up position
+ */
 function updatePowerUp() {
 	for (let i = bullets.length; i > 0; i--) {
 		if (bullets[i-1] && powerUp && areTwoElementsColliding(bullets[i -1], powerUp!)) {
@@ -326,14 +396,23 @@ function updatePowerUp() {
 	powerUp && powerUp.update();
 }
 
+/**
+ * Check if power up has faded
+ *  - remove power up
+ */
 function checkPowerUpFade() {
 	if (powerUp?.opacity === 0) {
 		powerUp = null;
 	}
 }
 
+/**
+ * Check collision between player and roids
+ *  - remove live
+ *  - set game over (if no more lives)
+ */
 function checkPlayerRoidsCollisions() {
-	if (player.isInvencible) return;
+	if (player.isInvincible) return;
 	
 	for (let i = roids.length; i > 0; i--) {
 		if (areTwoElementsColliding(player, roids[i - 1])) {
@@ -348,6 +427,11 @@ function checkPlayerRoidsCollisions() {
 	}
 }
 
+/**
+ * Update points
+ *  - update position
+ *  - remove points that have faded out
+ */
 function updatePoints() {
 	for (let i = hitPoints.length; i > 0; i--) {
 		const hitPoint = hitPoints[i - 1];
@@ -359,6 +443,9 @@ function updatePoints() {
 	}
 }
 
+/**
+ * Show canvas border when player is hit
+ */
 function showPlayerHitCanvasBorder() {
 	canvas.classList.add('canvas--player-hit');
 	
@@ -369,19 +456,26 @@ function showPlayerHitCanvasBorder() {
 	});
 }
 
+/**
+ * Update hi-scores
+ *  - If score is hi-score, prompt name and save to local storage
+ *  - Show hi-scores
+ */
 function updateSavedScore() {
 	const hiScores = getScore(STORE_NAME);
-	if (GAME_STATE === GameState.WIN) {
+	if (GAME_STATE === GameState.WIN || GAME_STATE === GameState.GAME_OVER) {
 		for (let i = 0; i < AMOUNT_OF_HIGHSCORES; i++) {
 			if (hiScores[i] && hiScores[i]!.score >= score) {
 				continue;
 			} else {
 				let userName = window.prompt('Well done, you have one of the top 3 scores. What is your user name?');
 				if (!userName) userName = 'n/a';
-				hiScores[i] = { name: userName.trim(), score: score };
+				//hiScores[i] = { name: userName.trim(), score: score };
+				hiScores.splice(i, 0, { name: userName.trim(), score: score });
 				break;
 			}
 		}
+		hiScores.length = AMOUNT_OF_HIGHSCORES;
 		saveScore(STORE_NAME, hiScores);
 	}
 	
@@ -392,4 +486,5 @@ function updateSavedScore() {
 	}
 }
 
+// Init app
 init();

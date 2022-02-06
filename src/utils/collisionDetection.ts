@@ -3,6 +3,12 @@ import { Roid } from '../classes/Roid.js';
 import { Player } from '../classes/Player.js';
 import { PowerUp } from '../classes/PowerUp.js';
 
+/**
+ * Detect collision between two elements.
+ *
+ * @param elOne
+ * @param elTwo
+ */
 export function areTwoElementsColliding(elOne: Bullet | Player, elTwo: Roid | PowerUp): boolean {
 	const sideA = elOne.pos.x - elTwo.pos.x;
 	const sideB = elOne.pos.y - elTwo.pos.y;
